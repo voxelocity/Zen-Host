@@ -37,6 +37,7 @@ jobs:
           - name: Linux arm64
             os: ubuntu-24.04-arm
             args: --linux --arm64
+            system_fpm: true
 
     steps:
       - uses: actions/checkout@v4
@@ -49,6 +50,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # electron-builder vendors an x86-only fpm, which cannot run on an arm64
+      # host, so .deb packaging needs the system fpm there instead.
+      - name: Install system fpm (arm64 .deb)
+        if: matrix.system_fpm
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ruby ruby-dev build-essential
+          sudo gem install fpm --no-document
+
       - name: Regenerate icons
         run: npm run icons
 
@@ -56,6 +66,7 @@ jobs:
         run: npx electron-builder ${{ matrix.args }} --publish never
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USE_SYSTEM_FPM: ${{ matrix.system_fpm && 'true' || '' }}
           # Unsigned builds. Add CSC_LINK / CSC_KEY_PASSWORD secrets to sign macOS,
           # and APPLE_ID / APPLE_APP_SPECIFIC_PASSWORD / APPLE_TEAM_ID to notarize.
           CSC_IDENTITY_AUTO_DISCOVERY: false
