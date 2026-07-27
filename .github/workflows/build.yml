@@ -25,12 +25,13 @@ jobs:
           - name: Windows arm64
             os: windows-latest
             args: --win --arm64
-          - name: macOS arm64 (Apple Silicon)
+          # One macOS job covers both architectures: packaging pulls down the
+          # prebuilt Electron for each arch, so no native compilation happens and
+          # an Apple Silicon runner produces a correct Intel build. Avoids the
+          # long macos-13 queue.
+          - name: macOS (Apple Silicon + Intel)
             os: macos-latest
-            args: --mac --arm64
-          - name: macOS x64 (Intel)
-            os: macos-13
-            args: --mac --x64
+            args: --mac --arm64 --x64
           - name: Linux x64
             os: ubuntu-latest
             args: --linux --x64
