@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;" />
+  <title>Zen Host</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div id="app">
+    <!-- Sidebar -->
+    <aside id="sidebar">
+      <div class="brand">
+        <span class="logo">⛏</span>
+        <div>
+          <div class="brand-title">Zen Host</div>
+          <div class="brand-sub">Host your own world</div>
+        </div>
+      </div>
+      <button id="newServerBtn" class="btn btn-primary btn-block">+ New Server</button>
+      <div class="sidebar-label">Your Servers</div>
+      <div id="serverList" class="server-list"></div>
+    </aside>
+
+    <!-- Main panel -->
+    <main id="main">
+      <div id="emptyState" class="empty-state glass">
+        <div class="empty-art">⛏</div>
+        <h1>Welcome to Zen Host</h1>
+        <p>Spin up a Minecraft Java server in a couple of clicks — vanilla, Paper, Fabric, Forge or NeoForge.</p>
+        <button id="emptyCreateBtn" class="btn btn-primary btn-lg">+ Create your first server</button>
+      </div>
+
+      <div id="serverView" class="hidden">
+        <header class="server-header">
+          <div class="server-title">
+            <span id="statusDot" class="status-dot"></span>
+            <input id="serverNameInput" class="name-input" />
+            <span id="serverMeta" class="server-meta-pill"></span>
+          </div>
+          <div class="server-actions">
+            <button id="startBtn" class="btn btn-success">▶ Start</button>
+            <button id="stopBtn" class="btn btn-danger hidden">■ Stop</button>
+            <button id="folderBtn" class="btn btn-ghost" title="Open server folder">📁</button>
+            <button id="deleteBtn" class="btn btn-ghost danger-text" title="Delete server">🗑</button>
+          </div>
+        </header>
+
+        <nav class="tabs">
+          <button class="tab active" data-tab="overview">⌂ Overview</button>
+          <button class="tab" data-tab="console">▣ Console</button>
+          <button class="tab" data-tab="world">🌍 World</button>
+          <button class="tab" data-tab="operators">★ Operators</button>
+          <button class="tab" data-tab="settings">⚙ Settings</button>
+          <button class="tab" data-tab="mods">🧩 Mods</button>
+          <button class="tab" data-tab="farrender">🌄 Far Render</button>
+        </nav>
+
+        <div class="tab-scroll">
+        <!-- OVERVIEW / LANDING -->
+        <section class="tab-panel" data-panel="overview">
+          <div class="connect-card glass glow">
+            <div class="connect-head">
+              <span id="ovStatusDot" class="status-dot lg"></span>
+              <span id="ovStatusText" class="connect-status">Stopped</span>
+            </div>
+            <div class="connect-label">Connect to this server at</div>
+            <div class="connect-ip-row">
+              <code id="connectIp" class="connect-ip">localhost:25565</code>
+              <button id="copyIpBtn" class="btn btn-primary copy-btn">⧉ Copy</button>
+            </div>
+            <div id="lanRow" class="connect-lan hidden">
+              On your network: <code id="connectLan">—</code>
+              <button id="copyLanBtn" class="link-btn">copy</button>
+            </div>
+
+            <div class="public-box">
+              <div class="public-head">
+                <span class="public-title">🌐 Public address <span class="muted">(anyone can join, no port forwarding)</span></span>
+                <label class="switch sm" title="Make this server reachable over the internet">
+                  <input type="checkbox" id="publicToggle"><span class="slider"></span>
+                </label>
+              </div>
+              <div id="publicRow" class="public-row">
+                <span id="publicDot" class="status-dot"></span>
+                <code id="publicAddr">—</code>
+                <button id="copyPublicBtn" class="btn btn-primary copy-btn sm hidden">⧉ Copy</button>
+              </div>
+              <div id="publicHint" class="muted public-hint">Turn this on, then start the server to get a public address.</div>
+            </div>
+            <div class="connect-actions">
+              <button id="ovStartBtn" class="btn btn-success btn-lg">▶ Start Server</button>
+              <button id="ovStopBtn" class="btn btn-danger btn-lg hidden">■ Stop Server</button>
+            </div>
+          </div>
+
+          <div class="quick-grid">
+            <button class="quick-card glass" data-goto="console">
+              <span class="qc-icon">▣</span><span class="qc-title">Console</span>
+              <span class="qc-sub">Live output & commands</span>
+            </button>
+            <button class="quick-card glass" data-goto="world">
+              <span class="qc-icon">🌍</span><span class="qc-title">World</span>
+              <span class="qc-sub">Gamemode, seed & rules</span>
+            </button>
+            <button class="quick-card glass" data-goto="operators">
+              <span class="qc-icon">★</span><span class="qc-title">Operators</span>
+              <span class="qc-sub">Give admin powers</span>
+            </button>
+            <button class="quick-card glass" data-goto="mods">
+              <span class="qc-icon">🧩</span><span class="qc-title">Mods</span>
+              <span class="qc-sub">Add & manage mods</span>
+            </button>
+          </div>
+
+          <div class="info-chips" id="ovChips"></div>
+        </section>
+
+        <!-- CONSOLE -->
+        <section class="tab-panel hidden" data-panel="console">
+          <div id="console" class="console glass"></div>
+          <div class="console-input">
+            <input id="commandInput" placeholder="Type a server command (e.g. say hello, time set day, weather clear)…" />
+            <button id="sendCmdBtn" class="btn btn-primary">Send</button>
+          </div>
+        </section>
+
+        <!-- WORLD (visual) -->
+        <section class="tab-panel hidden" data-panel="world">
+          <div class="panel-toolbar">
+            <span class="muted">Seed &amp; world type only apply to a freshly generated world. Other rules apply on next start.</span>
+            <button id="saveWorldBtn" class="btn btn-primary">Save World Settings</button>
+          </div>
+          <div id="worldForm" class="world-form"></div>
+        </section>
+
+        <!-- OPERATORS -->
+        <section class="tab-panel hidden" data-panel="operators">
+          <div class="ops-add glass">
+            <div class="ops-add-title">Add an operator</div>
+            <div class="muted" style="margin-bottom:10px">Operators can use admin commands (/gamemode, /give, /tp…). Enter the player's exact Minecraft username.</div>
+            <div class="ops-add-row">
+              <input id="opNameInput" placeholder="Player username" />
+              <select id="opLevelSelect" title="Operator level">
+                <option value="4" selected>Level 4 — full</option>
+                <option value="3">Level 3</option>
+                <option value="2">Level 2</option>
+                <option value="1">Level 1</option>
+              </select>
+              <button id="addOpBtn" class="btn btn-primary">★ Add Operator</button>
+            </div>
+            <div id="opNotice" class="notice hidden" style="margin-top:12px"></div>
+          </div>
+          <div id="opsList" class="ops-list"></div>
+        </section>
+
+        <!-- SETTINGS (full server.properties) -->
+        <section class="tab-panel hidden" data-panel="settings">
+          <div class="panel-toolbar">
+            <span class="muted">Every server.properties value. Changes apply on next server start.</span>
+            <button id="savePropsBtn" class="btn btn-primary">Save Settings</button>
+          </div>
+          <div id="propsForm" class="props-form"></div>
+        </section>
+
+        <!-- MODS -->
+        <section class="tab-panel hidden" data-panel="mods">
+          <div id="modsDropzone" class="dropzone glass">
+            <div class="dropzone-inner">
+              <div class="dropzone-icon">📦</div>
+              <div><strong>Drag &amp; drop mod .jar files here</strong></div>
+              <div class="muted">or <button id="browseModsBtn" class="link-btn">browse files</button></div>
+            </div>
+          </div>
+          <div id="modsNotice" class="notice hidden"></div>
+          <div id="modsList" class="mods-list"></div>
+        </section>
+
+        <!-- FAR RENDER -->
+        <section class="tab-panel hidden" data-panel="farrender">
+          <div id="farNotice" class="notice warn hidden"></div>
+          <div id="farBody">
+            <div class="world-block glass">
+              <div class="world-section-title">Server-side distant rendering</div>
+              <p class="muted" style="margin-bottom:14px">Installs <strong>Distant Horizons</strong> + <strong>Voxy</strong> (so the server streams far terrain to players automatically) and <strong>Chunky</strong> (to pre-generate the world). Players still need Distant Horizons or Voxy installed on their own client.</p>
+              <div class="far-mods" id="farMods"></div>
+              <button id="installFarBtn" class="btn btn-primary" style="margin-top:14px">⤓ Install far-render mods</button>
+            </div>
+
+            <div class="world-block glass" style="margin-top:16px">
+              <div class="world-section-title">Pre-generate the world</div>
+              <p class="muted" style="margin-bottom:14px">Generate terrain ahead of time so distant chunks are ready the moment players connect — no flying around to render them. The server must be running.</p>
+              <label class="world-field" style="max-width:520px">
+                <span>Radius: <strong id="radiusLabel">3000 blocks</strong> <span class="muted" id="radiusChunks"></span></span>
+                <input id="radiusSlider" type="range" min="500" max="12000" step="500" value="3000" />
+              </label>
+              <div class="pregen-actions">
+                <button id="pregenBtn" class="btn btn-success">▶ Pre-generate</button>
+                <button id="pregenCancelBtn" class="btn btn-ghost hidden">■ Cancel</button>
+              </div>
+              <div id="pregenProgress" class="create-progress hidden" style="max-width:520px">
+                <div class="progress-bar"><div id="pregenFill" class="progress-fill"></div></div>
+                <div id="pregenText" class="muted">Starting…</div>
+              </div>
+            </div>
+          </div>
+        </section>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- New server modal -->
+  <div id="modal" class="modal-backdrop hidden">
+    <div class="modal glass">
+      <h2>Create a New Server</h2>
+      <label class="field">
+        <span>Server name</span>
+        <input id="m_name" placeholder="My Awesome Server" />
+      </label>
+      <label class="field">
+        <span>Server type</span>
+        <div class="type-cards" id="typeCards">
+          <button class="type-card selected" data-type="vanilla">
+            <span class="type-name">Vanilla</span>
+            <span class="type-desc">Pure Minecraft</span>
+          </button>
+          <button class="type-card" data-type="paper">
+            <span class="type-name">Paper</span>
+            <span class="type-desc">Fast, plugins</span>
+          </button>
+          <button class="type-card" data-type="fabric">
+            <span class="type-name">Fabric</span>
+            <span class="type-desc">Drag-drop mods</span>
+          </button>
+          <button class="type-card" data-type="forge">
+            <span class="type-name">Forge</span>
+            <span class="type-desc">Classic modding</span>
+          </button>
+          <button class="type-card" data-type="neoforge">
+            <span class="type-name">NeoForge</span>
+            <span class="type-desc">Modern Forge fork</span>
+          </button>
+        </div>
+      </label>
+      <div class="field-row">
+        <label class="field">
+          <span>Minecraft version</span>
+          <select id="m_version"><option>Loading…</option></select>
+        </label>
+        <label class="field">
+          <span>Memory: <strong id="memLabel">2048 MB</strong></span>
+          <input id="m_memory" type="range" min="1024" max="8192" step="512" value="2048" />
+        </label>
+      </div>
+
+      <div id="createProgress" class="create-progress hidden">
+        <div class="progress-bar"><div id="progressFill" class="progress-fill"></div></div>
+        <div id="progressText" class="muted">Preparing…</div>
+      </div>
+
+      <div class="modal-actions">
+        <button id="m_cancel" class="btn btn-ghost">Cancel</button>
+        <button id="m_create" class="btn btn-primary">Create Server</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast hidden"></div>
+
+  <script src="renderer.js"></script>
+</body>
+</html>

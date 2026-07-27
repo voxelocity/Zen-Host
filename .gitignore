@@ -1,0 +1,27 @@
+node_modules/
+dist/
+out/
+
+# Local run logs
+*.log
+electron-out.log
+electron-err.log
+ren-out.log
+ren-err.log
+far-out.log
+far-err.log
+install.log
+
+# OS cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editors
+.vscode/
+.idea/
+
+# Signing material — never commit these
+*.p12
+*.pfx
+*.mobileprovision

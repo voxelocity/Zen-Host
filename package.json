@@ -1,0 +1,107 @@
+{
+  "name": "zen-host",
+  "version": "0.1.0",
+  "description": "Zen Host — visually create, host, and manage your own Minecraft Java servers with drag-and-drop mods.",
+  "main": "main.js",
+  "author": {
+    "name": "shark",
+    "email": "voxelocity@users.noreply.github.com"
+  },
+  "license": "MIT",
+  "homepage": "https://github.com/voxelocity/Zen-Host",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/voxelocity/Zen-Host.git"
+  },
+  "scripts": {
+    "start": "electron .",
+    "icons": "node build/generate-icon.js",
+    "dist": "electron-builder",
+    "dist:win": "electron-builder --win --x64 --arm64",
+    "dist:mac": "electron-builder --mac --x64 --arm64",
+    "dist:linux": "electron-builder --linux --x64 --arm64"
+  },
+  "devDependencies": {
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.shark.zenhost",
+    "productName": "Zen Host",
+    "artifactName": "${productName}-${version}-${os}-${arch}.${ext}",
+    "files": [
+      "main.js",
+      "preload.js",
+      "src/**/*",
+      "renderer/**/*"
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    },
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Zen Host"
+    },
+    "mac": {
+      "target": [
+        { "target": "dmg", "arch": ["x64", "arm64"] },
+        { "target": "zip", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "build/icon.png",
+      "category": "public.app-category.utilities",
+      "darkModeSupport": true,
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "build/entitlements.mac.plist",
+      "entitlementsInherit": "build/entitlements.mac.plist",
+      "extendInfo": {
+        "NSLocalNetworkUsageDescription": "Zen Host needs local network access so friends on your network can join your Minecraft server."
+      }
+    },
+    "dmg": {
+      "title": "${productName} ${version}"
+    },
+    "linux": {
+      "target": [
+        { "target": "AppImage", "arch": ["x64", "arm64"] },
+        { "target": "deb", "arch": ["x64", "arm64"] },
+        { "target": "tar.gz", "arch": ["x64", "arm64"] }
+      ],
+      "icon": "build/icon.png",
+      "category": "Game",
+      "synopsis": "Create, host and manage Minecraft Java servers",
+      "desktop": {
+        "entry": {
+          "Name": "Zen Host",
+          "Comment": "Create, host and manage your own Minecraft Java servers",
+          "Categories": "Game;Utility;"
+        }
+      }
+    },
+    "deb": {
+      "depends": [
+        "libgtk-3-0",
+        "libnotify4",
+        "libnss3",
+        "libxss1",
+        "libxtst6",
+        "xdg-utils",
+        "libatspi2.0-0",
+        "libsecret-1-0"
+      ],
+      "recommends": ["default-jre-headless"]
+    }
+  }
+}
