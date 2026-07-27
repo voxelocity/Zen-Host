@@ -123,16 +123,16 @@ const VERSION = '0.1.0';
 
 const PRIMARY = {
   win: {
-    x64:   { file: `Zen Host-${VERSION}-win-x64.exe`,   label: 'Download for Windows', meta: '64-bit installer · Windows 10/11' },
-    arm64: { file: `Zen Host-${VERSION}-win-arm64.exe`, label: 'Download for Windows', meta: 'ARM64 installer · Windows 10/11' },
+    x64:   { file: `Zen.Host-${VERSION}-win-x64.exe`,   label: 'Download for Windows', meta: '64-bit installer · Windows 10/11' },
+    arm64: { file: `Zen.Host-${VERSION}-win-arm64.exe`, label: 'Download for Windows', meta: 'ARM64 installer · Windows 10/11' },
   },
   mac: {
-    arm64: { file: `Zen Host-${VERSION}-mac-arm64.dmg`, label: 'Download for macOS', meta: 'Apple Silicon · macOS 11+' },
-    x64:   { file: `Zen Host-${VERSION}-mac-x64.dmg`,   label: 'Download for macOS', meta: 'Intel · macOS 11+' },
+    arm64: { file: `Zen.Host-${VERSION}-mac-arm64.dmg`, label: 'Download for macOS', meta: 'Apple Silicon · macOS 11+' },
+    x64:   { file: `Zen.Host-${VERSION}-mac-x64.dmg`,   label: 'Download for macOS', meta: 'Intel · macOS 11+' },
   },
   linux: {
-    x64:   { file: `Zen Host-${VERSION}-linux-x86_64.AppImage`, label: 'Download for Linux', meta: 'AppImage · x86_64' },
-    arm64: { file: `Zen Host-${VERSION}-linux-arm64.AppImage`,  label: 'Download for Linux', meta: 'AppImage · ARM64' },
+    x64:   { file: `Zen.Host-${VERSION}-linux-x86_64.AppImage`, label: 'Download for Linux', meta: 'AppImage · x86_64' },
+    arm64: { file: `Zen.Host-${VERSION}-linux-arm64.AppImage`,  label: 'Download for Linux', meta: 'AppImage · ARM64' },
   },
 };
 
