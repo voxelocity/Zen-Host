@@ -40,10 +40,7 @@
       "output": "dist"
     },
     "win": {
-      "target": [
-        { "target": "nsis", "arch": ["x64", "arm64"] },
-        { "target": "zip", "arch": ["x64", "arm64"] }
-      ],
+      "target": ["nsis", "zip"],
       "icon": "build/icon.ico"
     },
     "nsis": {
@@ -55,10 +52,7 @@
       "shortcutName": "Zen Host"
     },
     "mac": {
-      "target": [
-        { "target": "dmg", "arch": ["x64", "arm64"] },
-        { "target": "zip", "arch": ["x64", "arm64"] }
-      ],
+      "target": ["dmg", "zip"],
       "icon": "build/icon.png",
       "category": "public.app-category.utilities",
       "darkModeSupport": true,
@@ -74,11 +68,7 @@
       "title": "${productName} ${version} ${arch}"
     },
     "linux": {
-      "target": [
-        { "target": "AppImage", "arch": ["x64", "arm64"] },
-        { "target": "deb", "arch": ["x64", "arm64"] },
-        { "target": "tar.gz", "arch": ["x64", "arm64"] }
-      ],
+      "target": ["AppImage", "deb", "tar.gz"],
       "icon": "build/icon.png",
       "category": "Game",
       "synopsis": "Create, host and manage Minecraft Java servers",
