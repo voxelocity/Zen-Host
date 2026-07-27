@@ -34,6 +34,7 @@ jobs:
           - name: Linux x64
             os: ubuntu-latest
             args: --linux --x64
+            system_fpm: true
           - name: Linux arm64
             os: ubuntu-24.04-arm
             args: --linux --arm64
@@ -51,8 +52,8 @@ jobs:
         run: npm ci
 
       # electron-builder vendors an x86-only fpm, which cannot run on an arm64
-      # host, so .deb packaging needs the system fpm there instead.
-      - name: Install system fpm (arm64 .deb)
+      # host. Both Linux jobs use the system fpm so they behave identically.
+      - name: Install system fpm (.deb packaging)
         if: matrix.system_fpm
         run: |
           sudo apt-get update
