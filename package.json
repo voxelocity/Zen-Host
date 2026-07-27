@@ -71,7 +71,8 @@
       }
     },
     "dmg": {
-      "title": "${productName} ${version}"
+      "_comment": "arch is part of the title so the x64 and arm64 dmg builds don't both try to mount /Volumes/Zen Host <version> at the same time",
+      "title": "${productName} ${version} ${arch}"
     },
     "linux": {
       "target": [
