@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Docs — Zen Host</title>
+  <meta name="description" content="Zen Host documentation — installation, creating servers, the dashboard, mods, operators, networking, server.properties reference and file locations." />
+  <meta name="theme-color" content="#080a10" />
+  <link rel="icon" type="image/png" href="assets/zenlogo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <a class="skip-link" href="#install">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <div class="scroll-progress" id="scrollProgress"></div>
+    <a class="brand" href="index.html">
+      <img src="assets/zenlogo.png" alt="" class="brand-logo" />
+      <span class="brand-name">Zen Host</span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="index.html" class="nav-btn">Home</a>
+      <a href="support.html" class="nav-btn">Support</a>
+      <a href="qa.html" class="nav-btn">Q&amp;A</a>
+      <a href="docs.html" class="nav-btn is-active" aria-current="page">Docs</a>
+      <a href="https://github.com/voxelocity/Zen-Host" class="nav-btn" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <div class="nav-right">
+      <a href="index.html#download" class="btn btn-primary btn-sm nav-cta">Download</a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="eyebrow">Documentation</div>
+    <h1>Zen Host docs</h1>
+    <p class="lede">How everything works, from first install to the last <code>server.properties</code> key.</p>
+  </section>
+
+  <div class="docs-layout">
+    <!-- SIDEBAR -->
+    <nav class="docs-nav" aria-label="Documentation">
+      <h4>Getting started</h4>
+      <a href="#install">Installation</a>
+      <a href="#java">Installing Java</a>
+      <a href="#first-server">Your first server</a>
+
+      <h4>Using the app</h4>
+      <a href="#dashboard">The dashboard</a>
+      <a href="#types">Server types</a>
+      <a href="#memory">Memory &amp; performance</a>
+      <a href="#mods">Mods &amp; plugins</a>
+      <a href="#operators">Operators</a>
+      <a href="#farrender">Far render</a>
+
+      <h4>Reference</h4>
+      <a href="#networking">Networking</a>
+      <a href="#properties">server.properties</a>
+      <a href="#commands">Console commands</a>
+      <a href="#files">Files &amp; backups</a>
+      <a href="#building">Building from source</a>
+    </nav>
+
+    <!-- BODY -->
+    <main class="docs-body">
+
+      <section class="docs-section" id="install">
+        <h2>Installation</h2>
+        <p class="docs-lead">Zen Host runs on Windows, macOS and Linux, on both 64-bit Intel/AMD and ARM. Pick the format for your platform from the <a href="index.html#download">download section</a>.</p>
+
+        <h3>Windows</h3>
+        <p>Run the <code>.exe</code> installer. It lets you choose an install directory and creates Start-menu and desktop shortcuts. The <code>.zip</code> is a portable build — extract it anywhere and run <code>Zen Host.exe</code>, no installation.</p>
+        <p>Builds are unsigned, so SmartScreen shows a warning on first run. Click <strong>More info → Run anyway</strong>.</p>
+
+        <h3>macOS</h3>
+        <p>Open the <code>.dmg</code> and drag Zen Host to Applications. Take the <strong>arm64</strong> build for Apple Silicon (M1 and later) or <strong>x64</strong> for Intel Macs.</p>
+        <p>Because the app isn't notarized, the first launch needs a right-click → <strong>Open</strong> → <strong>Open</strong>. Double-clicking won't offer that option.</p>
+        <div class="callout info"><span class="callout-icon">ℹ</span><p>If macOS claims the app is "damaged", clear the quarantine flag: <code>xattr -dr com.apple.quarantine "/Applications/Zen Host.app"</code></p></div>
+
+        <h3>Linux</h3>
+        <p>Three formats, all built for x64 and arm64:</p>
+        <ul>
+          <li><strong>AppImage</strong> — runs on any distribution. Needs the executable bit and FUSE.</li>
+          <li><strong>.deb</strong> — for Debian, Ubuntu and derivatives.</li>
+          <li><strong>.tar.gz</strong> — extract and run the <code>zen-host</code> binary.</li>
+        </ul>
+        <span class="code"><span class="c"># AppImage</span>
+chmod +x "Zen Host-0.1.0-linux-x86_64.AppImage"
+./"Zen Host-0.1.0-linux-x86_64.AppImage"
+
+<span class="c"># Debian package (apt resolves dependencies; dpkg -i does not)</span>
+sudo apt install ./"Zen Host-0.1.0-linux-amd64.deb"</span>
+      </section>
+
+      <section class="docs-section" id="java">
+        <h2>Installing Java</h2>
+        <p class="docs-lead">Zen Host bundles everything it needs to run itself, but a Minecraft server is a Java program — so a JDK has to be installed separately.</p>
+        <p>Install <strong>Java 21</strong>. Minecraft 1.20.5 and newer require it, and it runs older versions fine.</p>
+
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Platform</th><th>Command / source</th></tr></thead>
+            <tbody>
+              <tr><td>Windows</td><td><a href="https://adoptium.net" target="_blank" rel="noopener">adoptium.net</a> installer</td></tr>
+              <tr><td>macOS</td><td><code>brew install --cask temurin</code></td></tr>
+              <tr><td>Debian / Ubuntu</td><td><code>sudo apt install openjdk-21-jre-headless</code></td></tr>
+              <tr><td>Fedora</td><td><code>sudo dnf install java-21-openjdk-headless</code></td></tr>
+              <tr><td>Arch</td><td><code>sudo pacman -S jre21-openjdk-headless</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>How Zen Host finds it</h3>
+        <p>A GUI app launched from Finder, a <code>.desktop</code> launcher or an AppImage does not inherit your login-shell <code>PATH</code>, so looking only there would fail exactly when the app isn't started from a terminal. Zen Host searches, in order:</p>
+        <ol>
+          <li>The <code>JAVA_HOME</code> environment variable</li>
+          <li><code>/usr/libexec/java_home</code> on macOS</li>
+          <li>Every directory on <code>PATH</code></li>
+          <li>Standard install roots — <code>C:\Program Files\Java</code>, <code>/usr/lib/jvm</code>, <code>/Library/Java/JavaVirtualMachines</code>, Homebrew prefixes and similar, newest version first</li>
+        </ol>
+        <p>If your JDK lives somewhere unusual, set <code>JAVA_HOME</code> to the folder <em>containing</em> <code>bin/java</code> and restart the app.</p>
+      </section>
+
+      <section class="docs-section" id="first-server">
+        <h2>Your first server</h2>
+        <ol>
+          <li><strong>Create.</strong> Give it a name, choose a type and a Minecraft version, and set how much RAM it gets. Version lists are fetched live from Mojang, PaperMC and the loader APIs.</li>
+          <li><strong>Wait for the download.</strong> Vanilla, Paper and Fabric pull a server jar directly. Forge and NeoForge download an installer and run it locally, which takes longer and prints its progress.</li>
+          <li><strong>Accept the EULA.</strong> Mojang requires it; accepting writes <code>eula=true</code> to <code>eula.txt</code>.</li>
+          <li><strong>Start.</strong> First boot generates the spawn area, so it takes longer than later ones. The server is marked <em>running</em> once Minecraft prints its <code>Done</code> line.</li>
+          <li><strong>Connect.</strong> Copy an address from the Overview tab and join from Minecraft with the matching version.</li>
+        </ol>
+        <div class="callout tip"><span class="callout-icon">✓</span><p>New servers start with a sensible <code>server.properties</code> — survival, normal difficulty, 20 players, view and simulation distance 10, port 25565.</p></div>
+      </section>
+
+      <section class="docs-section" id="dashboard">
+        <h2>The dashboard</h2>
+        <p class="docs-lead">Each server opens onto seven tabs.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Tab</th><th>What it does</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Overview</strong></td><td>Status, start/stop, copyable connect addresses, and a button to open the server folder.</td></tr>
+              <tr><td><strong>Console</strong></td><td>Live server output with a command input — anything you'd type into a normal server console.</td></tr>
+              <tr><td><strong>World</strong></td><td>Gamemode, difficulty, seed and game rules, with the real in-game textures.</td></tr>
+              <tr><td><strong>Operators</strong></td><td>Grant or revoke admin by username. UUIDs are resolved for you.</td></tr>
+              <tr><td><strong>Settings</strong></td><td>The full <code>server.properties</code> editor, grouped into categories.</td></tr>
+              <tr><td><strong>Mods</strong></td><td>Drag-and-drop <code>.jar</code> mods, toggle them on and off, delete them.</td></tr>
+              <tr><td><strong>Far render</strong></td><td>Installs Distant Horizons, Voxy and Chunky, and drives chunk pre-generation.</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>The Mods tab appears for Fabric, Forge and NeoForge servers — the types that load mods from a <code>mods</code> folder.</p>
+      </section>
+
+      <section class="docs-section" id="types">
+        <h2>Server types</h2>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Type</th><th>Extends with</th><th>Best for</th></tr></thead>
+            <tbody>
+              <tr><td><strong>Vanilla</strong></td><td>Nothing</td><td>Plain Minecraft, exactly as Mojang ships it</td></tr>
+              <tr><td><strong>Paper</strong></td><td>Bukkit / Spigot plugins</td><td>Performance and plugin-driven survival servers</td></tr>
+              <tr><td><strong>Fabric</strong></td><td>Fabric mods</td><td>Lightweight modding, earliest support for new versions</td></tr>
+              <tr><td><strong>Forge</strong></td><td>Forge mods</td><td>Large established modpacks</td></tr>
+              <tr><td><strong>NeoForge</strong></td><td>NeoForge mods</td><td>Modern Forge successor, 1.20.2 and newer</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout warn"><span class="callout-icon">⚠</span><p>Mods and plugins are not interchangeable. A Fabric mod won't load on Forge, and a Bukkit plugin won't load on either — Paper is the only type here that takes plugins.</p></div>
+
+        <h3>How each type is launched</h3>
+        <p>Vanilla, Paper, Fabric and older Forge builds run a single server jar. Modern Forge and NeoForge (Minecraft 1.17+) instead generate an argument file during installation, and Zen Host launches through that — picking <code>win_args.txt</code> or <code>unix_args.txt</code> to match your platform.</p>
+        <span class="code"><span class="c"># jar-based types</span>
+java -Xms&lt;min&gt;M -Xmx&lt;max&gt;M -jar server.jar nogui
+
+<span class="c"># modern Forge / NeoForge</span>
+java -Xms&lt;min&gt;M -Xmx&lt;max&gt;M @libraries/.../unix_args.txt nogui</span>
+      </section>
+
+      <section class="docs-section" id="memory">
+        <h2>Memory &amp; performance</h2>
+        <p>The RAM value you set becomes the JVM's maximum heap. The starting heap is set to the same value or 1 GB, whichever is smaller, so the server doesn't reserve everything up front.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Setup</th><th>Suggested RAM</th></tr></thead>
+            <tbody>
+              <tr><td>Vanilla or Paper, 1–5 players</td><td>2 GB</td></tr>
+              <tr><td>Paper with plugins, 5–15 players</td><td>4 GB</td></tr>
+              <tr><td>Small mod set (10–40 mods)</td><td>4–6 GB</td></tr>
+              <tr><td>Large modpack (150+ mods)</td><td>8 GB+</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Never assign more than your machine physically has — the JVM will start and then be killed by the OS. Beyond about 8 GB, extra heap can make garbage-collection pauses <em>worse</em> rather than better.</p>
+
+        <h3>If the server can't keep up</h3>
+        <p>Minecraft's game loop is effectively single-threaded, so one CPU core saturating while the others idle is normal and expected. In order of impact:</p>
+        <ul>
+          <li>Lower <strong>Simulation Distance</strong> to 6–8 — the single biggest win, since it controls how far entities and redstone actually tick.</li>
+          <li>Lower <strong>View Distance</strong> to 8–10.</li>
+          <li>Switch to Paper, which is substantially faster than vanilla on the same world.</li>
+          <li>Keep the world off mechanical drives and out of cloud-synced folders.</li>
+        </ul>
+      </section>
+
+      <section class="docs-section" id="mods">
+        <h2>Mods &amp; plugins</h2>
+        <p>Drag <code>.jar</code> files onto the Mods tab, or use the browse button. They're copied into the server's <code>mods</code> folder; restart for changes to apply.</p>
+        <p>Disabling a mod renames it to <code>.jar.disabled</code>, which loaders skip — useful for bisecting a broken mod list without deleting anything. Only files ending <code>.jar</code> or <code>.jar.disabled</code> directly inside <code>mods</code> are listed, so unzip packs first and don't nest jars in subfolders.</p>
+
+        <h3>Getting mods right</h3>
+        <ul>
+          <li>Match the <strong>Minecraft version</strong> exactly.</li>
+          <li>Match the <strong>loader</strong> — Fabric, Forge and NeoForge builds are not interchangeable.</li>
+          <li>Install dependencies. Most Fabric mods need <strong>Fabric API</strong>.</li>
+          <li>Check which side a mod is for. Client-only mods (shaders, minimaps) often crash a server.</li>
+          <li>Every player needs the same mods at the same versions, except server-side-only ones.</li>
+        </ul>
+        <p><a href="https://modrinth.com" target="_blank" rel="noopener">Modrinth</a> and <a href="https://www.curseforge.com/minecraft" target="_blank" rel="noopener">CurseForge</a> are the standard sources.</p>
+
+        <h3>Paper plugins</h3>
+        <p>Paper loads Bukkit/Spigot plugins from a <code>plugins</code> folder rather than <code>mods</code>. Open the server folder from the Overview tab and drop them in there manually.</p>
+      </section>
+
+      <section class="docs-section" id="operators">
+        <h2>Operators</h2>
+        <p>Add a player by username on the Operators tab. Zen Host resolves their UUID and writes <code>ops.json</code> — so it works whether the server is running or stopped, and the entry survives a rename.</p>
+        <p>UUID resolution follows the server's <strong>Online Mode</strong> setting. In online mode the real Mojang UUID is looked up, and an unknown username is rejected. In offline mode the same deterministic offline UUID Minecraft itself uses is generated locally.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Level</th><th>Grants</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Bypass spawn protection</td></tr>
+              <tr><td>2</td><td>Single-player cheats — <code>/gamemode</code>, <code>/give</code>, <code>/tp</code>, command blocks</td></tr>
+              <tr><td>3</td><td>Player management — <code>/kick</code>, <code>/ban</code>, <code>/op</code></td></tr>
+              <tr><td>4</td><td>Everything, including <code>/stop</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>New operators default to level 4. If the server is running, the <code>op</code> command is issued immediately so it applies without a restart.</p>
+      </section>
+
+      <section class="docs-section" id="farrender">
+        <h2>Far render</h2>
+        <p>Installs the server-side half of an extended-view-distance setup, fetching builds that match your server's Minecraft version and loader from Modrinth:</p>
+        <ul>
+          <li><strong>Distant Horizons</strong> — level-of-detail terrain well beyond normal view distance. Fabric, Forge and NeoForge.</li>
+          <li><strong>Voxy</strong> — a similar LOD renderer. Fabric only.</li>
+          <li><strong>Chunky</strong> — pre-generates chunks so distant terrain already exists on disk.</li>
+        </ul>
+        <p>Each mod is fetched independently and reported separately, so one missing build doesn't block the others. If Modrinth has no release for your exact version and loader, you'll be told which mod and why.</p>
+
+        <h3>Pre-generating chunks</h3>
+        <p>With the server running, choose a radius in blocks and start. Zen Host drives Chunky through the console and reads progress back out of its output:</p>
+        <span class="code">chunky radius &lt;blocks&gt;
+chunky start</span>
+        <p>This is slow by nature — it generates every chunk in the radius and will use most of a CPU core throughout. Cancelling keeps everything already generated, and running it again resumes rather than restarting.</p>
+        <div class="callout info"><span class="callout-icon">ℹ</span><p>Players still need the matching <em>client</em> mod to see the extra distance. The server side only supplies the data.</p></div>
+      </section>
+
+      <section class="docs-section" id="networking">
+        <h2>Networking</h2>
+        <p>The Overview tab shows up to three addresses, each with a copy button.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Address</th><th>Reaches</th><th>Example</th></tr></thead>
+            <tbody>
+              <tr><td>Local</td><td>The same computer</td><td><code>localhost:25565</code></td></tr>
+              <tr><td>LAN</td><td>Same Wi-Fi / network</td><td><code>192.168.1.24:25565</code></td></tr>
+              <tr><td>Public</td><td>Anywhere</td><td><code>bore.pub:41287</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>The public tunnel</h3>
+        <p>Marking a server public opens a tunnel to the free <code>bore.pub</code> relay, giving you an internet-reachable address with no port forwarding, firewall rules or dynamic DNS. It's implemented as a pure-Node client speaking the bore protocol on TCP port 7835 — no extra binary is bundled or downloaded.</p>
+        <div class="callout warn"><span class="callout-icon">⚠</span><p>The relay assigns a <strong>random port each time the server starts</strong>, so the public address changes on every restart. Port-forward your own router if you need a permanent one.</p></div>
+        <p>The tunnel reconnects automatically if it drops. If the handshake times out, outbound port 7835 is most likely blocked — common on school, office and campus networks.</p>
+
+        <h3>Firewalls</h3>
+        <p>LAN play needs inbound connections allowed to Java on the host machine. Windows prompts on first launch; if it was dismissed, re-allow Java for <strong>Private</strong> networks under Windows Security. On Linux with ufw active, <code>sudo ufw allow 25565/tcp</code>.</p>
+      </section>
+
+      <section class="docs-section" id="properties">
+        <h2>server.properties reference</h2>
+        <p class="docs-lead">The Settings tab renders these as toggles, dropdowns and number fields, grouped by category. Any key not listed here still appears as a plain text field, so nothing is lost.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Key</th><th>Type</th><th>Group</th><th>Notes</th></tr></thead>
+            <tbody>
+              <tr><td><code>motd</code></td><td>text</td><td>General</td><td>Shown in the server list</td></tr>
+              <tr><td><code>max-players</code></td><td>1–1000</td><td>General</td><td>Default 20</td></tr>
+              <tr><td><code>enable-command-block</code></td><td>on/off</td><td>General</td><td>Off by default</td></tr>
+              <tr><td><code>difficulty</code></td><td>peaceful / easy / normal / hard</td><td>Gameplay</td><td>Default normal</td></tr>
+              <tr><td><code>gamemode</code></td><td>survival / creative / adventure / spectator</td><td>Gameplay</td><td>Default for new players</td></tr>
+              <tr><td><code>force-gamemode</code></td><td>on/off</td><td>Gameplay</td><td>Reset players to default on join</td></tr>
+              <tr><td><code>hardcore</code></td><td>on/off</td><td>Gameplay</td><td>Death bans the player</td></tr>
+              <tr><td><code>pvp</code></td><td>on/off</td><td>Gameplay</td><td>Player-versus-player damage</td></tr>
+              <tr><td><code>allow-flight</code></td><td>on/off</td><td>Gameplay</td><td>Needed by some mods</td></tr>
+              <tr><td><code>level-name</code></td><td>text</td><td>World</td><td>World folder name, default <code>world</code></td></tr>
+              <tr><td><code>level-seed</code></td><td>text</td><td>World</td><td>Only affects ungenerated terrain</td></tr>
+              <tr><td><code>level-type</code></td><td>normal / flat / large_biomes / amplified</td><td>World</td><td>Set before first start</td></tr>
+              <tr><td><code>generate-structures</code></td><td>on/off</td><td>World</td><td>Villages, temples, strongholds</td></tr>
+              <tr><td><code>spawn-monsters</code></td><td>on/off</td><td>World</td><td>Hostile mobs</td></tr>
+              <tr><td><code>spawn-animals</code></td><td>on/off</td><td>World</td><td>Passive mobs</td></tr>
+              <tr><td><code>spawn-npcs</code></td><td>on/off</td><td>World</td><td>Villagers</td></tr>
+              <tr><td><code>allow-nether</code></td><td>on/off</td><td>World</td><td>Nether portals</td></tr>
+              <tr><td><code>spawn-protection</code></td><td>0–256</td><td>World</td><td>Radius non-ops can't build in</td></tr>
+              <tr><td><code>view-distance</code></td><td>3–32</td><td>Performance</td><td>Chunks sent to players</td></tr>
+              <tr><td><code>simulation-distance</code></td><td>3–32</td><td>Performance</td><td>Chunks that actually tick — the expensive one</td></tr>
+              <tr><td><code>max-tick-time</code></td><td>ms</td><td>Performance</td><td><code>-1</code> disables the watchdog</td></tr>
+              <tr><td><code>server-port</code></td><td>1–65535</td><td>Network</td><td>Default 25565</td></tr>
+              <tr><td><code>online-mode</code></td><td>on/off</td><td>Network</td><td>Verify accounts with Mojang</td></tr>
+              <tr><td><code>white-list</code></td><td>on/off</td><td>Network</td><td>Restrict to listed players</td></tr>
+              <tr><td><code>enforce-whitelist</code></td><td>on/off</td><td>Network</td><td>Kick connected players not on the list</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="callout info"><span class="callout-icon">ℹ</span><p>Minecraft reads this file once at startup, so changes need a server restart. Saving from the app rewrites the file with keys sorted alphabetically and drops comments.</p></div>
+      </section>
+
+      <section class="docs-section" id="commands">
+        <h2>Console commands</h2>
+        <p>The Console tab sends anything you type straight to the server's standard input, exactly like a terminal-run server. No leading slash.</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Command</th><th>Does</th></tr></thead>
+            <tbody>
+              <tr><td><code>stop</code></td><td>Save and shut down cleanly</td></tr>
+              <tr><td><code>save-all</code></td><td>Flush the world to disk now</td></tr>
+              <tr><td><code>list</code></td><td>Who's online</td></tr>
+              <tr><td><code>say &lt;message&gt;</code></td><td>Broadcast to all players</td></tr>
+              <tr><td><code>op &lt;player&gt;</code> / <code>deop</code></td><td>Grant or revoke operator</td></tr>
+              <tr><td><code>kick &lt;player&gt; [reason]</code></td><td>Disconnect a player</td></tr>
+              <tr><td><code>ban &lt;player&gt;</code> / <code>pardon</code></td><td>Ban or unban</td></tr>
+              <tr><td><code>whitelist add|remove &lt;player&gt;</code></td><td>Manage the whitelist</td></tr>
+              <tr><td><code>gamemode &lt;mode&gt; &lt;player&gt;</code></td><td>Change someone's mode</td></tr>
+              <tr><td><code>time set day</code></td><td>Set the time</td></tr>
+              <tr><td><code>weather clear</code></td><td>Stop the rain</td></tr>
+              <tr><td><code>difficulty &lt;level&gt;</code></td><td>Change difficulty live</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Stopping from the Overview button sends <code>stop</code> for you and force-kills the process if it hasn't exited within 15 seconds.</p>
+      </section>
+
+      <section class="docs-section" id="files">
+        <h2>Files &amp; backups</h2>
+        <p>Every server lives in its own folder under the app's user-data directory:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Platform</th><th>Location</th></tr></thead>
+            <tbody>
+              <tr><td>Windows</td><td><code>%APPDATA%\zen-host\servers\&lt;id&gt;\</code></td></tr>
+              <tr><td>macOS</td><td><code>~/Library/Application Support/zen-host/servers/&lt;id&gt;/</code></td></tr>
+              <tr><td>Linux</td><td><code>~/.config/zen-host/servers/&lt;id&gt;/</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>Inside is an ordinary Minecraft server, so any standard Minecraft tooling works on it:</p>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Path</th><th>Contents</th></tr></thead>
+            <tbody>
+              <tr><td><code>world/</code></td><td>The entire save — terrain, inventories, player data</td></tr>
+              <tr><td><code>server.properties</code></td><td>Server configuration</td></tr>
+              <tr><td><code>ops.json</code></td><td>Operators</td></tr>
+              <tr><td><code>mods/</code></td><td>Mod jars (modded types)</td></tr>
+              <tr><td><code>plugins/</code></td><td>Plugin jars (Paper)</td></tr>
+              <tr><td><code>logs/latest.log</code></td><td>Most recent run's log</td></tr>
+              <tr><td><code>crash-reports/</code></td><td>Written on a hard crash</td></tr>
+              <tr><td><code>eula.txt</code></td><td>Mojang EULA acceptance</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Backing up</h3>
+        <p><strong>Stop the server first</strong>, then copy the <code>world</code> folder. Copying it live risks catching a half-written region file. To restore, drop the folder back in place of the current one while the server is stopped.</p>
+        <div class="callout warn"><span class="callout-icon">⚠</span><p>Deleting a server removes its whole folder, world included, with no undo. Never keep a live world in OneDrive, Dropbox or iCloud Drive — sync clients write underneath the server and corrupt region files.</p></div>
+      </section>
+
+      <section class="docs-section" id="building">
+        <h2>Building from source</h2>
+        <p>Zen Host is an Electron app with no build step for the front end — the source is what ships.</p>
+        <span class="code">git clone https://github.com/voxelocity/Zen-Host.git
+cd Zen-Host
+npm install
+npm start</span>
+
+        <h3>Packaging</h3>
+        <span class="code">npm run dist:win     <span class="c"># Windows   x64 + arm64</span>
+npm run dist:mac     <span class="c"># macOS     x64 + arm64</span>
+npm run dist:linux   <span class="c"># Linux     x64 + arm64</span></span>
+        <p>Output lands in <code>dist/</code>. Icons are generated from <code>build/zenlogo.png</code> by <code>npm run icons</code>.</p>
+        <div class="callout info"><span class="callout-icon">ℹ</span><p>Cross-compiling has hard limits: macOS <code>.dmg</code> builds require macOS, Linux <code>.deb</code> requires <code>fpm</code>, and <code>.AppImage</code> requires symlink privileges. From Windows you can build every Windows target plus the Linux <code>.tar.gz</code>. The GitHub Actions workflow builds all of them on native runners, and pushing a <code>v*</code> tag publishes a release.</p></div>
+
+        <h3>Layout</h3>
+        <div class="table-wrap">
+          <table>
+            <thead><tr><th>Path</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr><td><code>main.js</code></td><td>Electron main process and IPC wiring</td></tr>
+              <tr><td><code>preload.js</code></td><td>Context-isolated bridge to the renderer</td></tr>
+              <tr><td><code>src/java.js</code></td><td>Cross-platform Java runtime discovery</td></tr>
+              <tr><td><code>src/serverManager.js</code></td><td>Server store, process lifecycle, mods, properties</td></tr>
+              <tr><td><code>src/downloads.js</code></td><td>Mojang / Paper / Fabric APIs and streamed downloads</td></tr>
+              <tr><td><code>src/tunnel.js</code></td><td>Pure-Node bore tunnel client</td></tr>
+              <tr><td><code>src/properties.js</code></td><td><code>server.properties</code> metadata and parser</td></tr>
+              <tr><td><code>src/players.js</code></td><td>Username → UUID resolution</td></tr>
+              <tr><td><code>src/modrinth.js</code></td><td>Modrinth lookups for far-render mods</td></tr>
+              <tr><td><code>renderer/</code></td><td>The UI</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <section class="page-cta">
+    <div class="page-cta-inner glass">
+      <div>
+        <h3>Hit a problem?</h3>
+        <p>Support covers error messages and crashes; the Q&amp;A answers the shorter questions.</p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="support.html" class="btn btn-primary">Support</a>
+        <a href="qa.html" class="btn btn-ghost">Q&amp;A</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/zenlogo.png" alt="" />
+        <div>
+          <strong>Zen Host</strong>
+          <p>Minecraft servers, made calm.</p>
+        </div>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="index.html#features">Features</a>
+          <a href="index.html#types">Server types</a>
+          <a href="index.html#download">Download</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="docs.html">Docs</a>
+          <a href="qa.html">Q&amp;A</a>
+          <a href="https://github.com/voxelocity/Zen-Host/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="support.html">Support</a>
+          <a href="https://github.com/voxelocity/Zen-Host" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener">Report an issue</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Zen Host</span>
+      <span class="footer-note">Made for Minecraft Java Edition. Not affiliated with Mojang or Microsoft.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="pages.js"></script>
+</body>
+</html>

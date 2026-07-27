@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Zen Host — Host your own Minecraft world</title>
+  <meta name="description" content="Zen Host is a desktop app to create, host, and manage your own Minecraft Java servers — drag-and-drop mods, a visual dashboard, and a live console. No command line required." />
+  <meta name="theme-color" content="#080a10" />
+  <link rel="icon" type="image/png" href="assets/zenlogo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <a class="skip-link" href="#features">Skip to content</a>
+
+  <!-- NAV -->
+  <header class="nav" id="nav">
+    <div class="scroll-progress" id="scrollProgress"></div>
+
+    <a class="brand" href="#top">
+      <img src="assets/zenlogo.png" alt="" class="brand-logo" />
+      <span class="brand-name">Zen Host</span>
+    </a>
+
+    <!-- One button covers the whole index; the rest are their own pages. -->
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="#top" class="nav-btn is-active" aria-current="page">Home</a>
+      <a href="support.html" class="nav-btn">Support</a>
+      <a href="qa.html" class="nav-btn">Q&amp;A</a>
+      <a href="docs.html" class="nav-btn">Docs</a>
+      <a href="https://github.com/voxelocity/Zen-Host" class="nav-btn" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+
+    <div class="nav-right">
+      <a href="#download" class="btn btn-primary btn-sm nav-cta">Download</a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="hero-copy">
+      <div class="pill reveal">
+        <span class="pill-dot"></span> Minecraft Java Edition · Windows 10/11
+      </div>
+      <h1 class="reveal" style="--d:.06s">Host your own<br />Minecraft world<br /><span class="grad">in two clicks.</span></h1>
+      <p class="lede reveal" style="--d:.12s">Zen Host turns server hosting into a calm, visual experience — pick a version, drag in your mods, hit start. Vanilla, Paper, Fabric, Forge &amp; NeoForge, all from one dashboard.</p>
+      <div class="hero-actions reveal" style="--d:.18s">
+        <a href="#download" class="btn btn-primary btn-lg">↓ Download for Windows</a>
+        <a href="#showcase" class="btn btn-ghost btn-lg">Watch it in action</a>
+      </div>
+      <ul class="hero-facts reveal" style="--d:.24s">
+        <li>Free forever</li>
+        <li>No command line</li>
+        <li>Bring your own mods</li>
+      </ul>
+    </div>
+
+    <!-- 3D STAGE -->
+    <div class="stage" id="heroStage">
+      <div class="stage-inner" id="stageInner">
+        <div class="panel panel-main float-a" data-depth="40">
+          <video src="assets/demo-dashboard.mp4" autoplay muted loop playsinline></video>
+          <div class="panel-glow"></div>
+        </div>
+        <div class="panel panel-side float-b" data-depth="80">
+          <video src="assets/demo-world.mp4" autoplay muted loop playsinline></video>
+          <div class="panel-glow"></div>
+        </div>
+      </div>
+    </div>
+
+    <a class="scroll-hint" href="#features" aria-label="Scroll down"><span></span></a>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="section" id="features">
+    <div class="section-head reveal">
+      <div class="eyebrow">Everything you need</div>
+      <h2>Server hosting, without the headache</h2>
+      <p class="section-sub">Every part of running a server, rebuilt as something you can point at and click.</p>
+    </div>
+    <div class="feature-grid">
+      <div class="feature glass reveal"><span class="f-icon">⚡</span><h3>One-click setup</h3><p>Pick a type, a version and how much RAM — Zen Host downloads the right server automatically.</p></div>
+      <div class="feature glass reveal" style="--d:.05s"><span class="f-icon">🧩</span><h3>Drag &amp; drop mods</h3><p>Drop <code>.jar</code> mods straight onto the window. Enable, disable or remove them in a click.</p></div>
+      <div class="feature glass reveal" style="--d:.1s"><span class="f-icon">🌍</span><h3>Visual world editor</h3><p>Set gamemode, difficulty, seed and rules with real game icons — no editing text files.</p></div>
+      <div class="feature glass reveal" style="--d:.15s"><span class="f-icon">📋</span><h3>Copyable connect IP</h3><p>Your address is front and centre with a copy button — plus the LAN address for friends.</p></div>
+      <div class="feature glass reveal" style="--d:.2s"><span class="f-icon">★</span><h3>Operators</h3><p>Grant admin powers by username — Zen Host resolves the UUID and updates <code>ops.json</code> for you.</p></div>
+      <div class="feature glass reveal" style="--d:.25s"><span class="f-icon">▣</span><h3>Live console</h3><p>Watch the server log in real time and send commands right from the app.</p></div>
+    </div>
+  </section>
+
+  <!-- HOW IT WORKS -->
+  <section class="section steps-section" id="how">
+    <div class="section-head reveal">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps to a running world</h2>
+    </div>
+    <ol class="steps">
+      <li class="step reveal">
+        <span class="step-num">01</span>
+        <h3>Create a server</h3>
+        <p>Name it, choose Vanilla, Paper, Fabric, Forge or NeoForge, and pick your Minecraft version. Zen Host fetches and installs everything for you.</p>
+      </li>
+      <li class="step reveal" style="--d:.08s">
+        <span class="step-num">02</span>
+        <h3>Make it yours</h3>
+        <p>Drop in mods, set the gamemode and difficulty, tweak the game rules and hand out operator status — all from the dashboard.</p>
+      </li>
+      <li class="step reveal" style="--d:.16s">
+        <span class="step-num">03</span>
+        <h3>Hit start</h3>
+        <p>Copy the connect address, send it to your friends, and watch the console light up as they join.</p>
+      </li>
+    </ol>
+  </section>
+
+  <!-- SHOWCASE -->
+  <section class="section" id="showcase">
+    <div class="section-head reveal">
+      <div class="eyebrow">See it move</div>
+      <h2>A dashboard that feels alive</h2>
+    </div>
+
+    <div class="showcase-row reveal">
+      <div class="tilt-panel" data-tilt>
+        <video src="assets/demo-dashboard.mp4" autoplay muted loop playsinline></video>
+      </div>
+      <div class="showcase-text">
+        <div class="eyebrow">Overview</div>
+        <h3>Your whole server, at a glance</h3>
+        <p>The Overview tab puts the connect address, status and quick actions where you can reach them instantly. Start, stop and jump into any section without hunting through menus.</p>
+      </div>
+    </div>
+
+    <div class="showcase-row reverse reveal">
+      <div class="tilt-panel" data-tilt>
+        <video src="assets/demo-world.mp4" autoplay muted loop playsinline></video>
+      </div>
+      <div class="showcase-text">
+        <div class="eyebrow">World</div>
+        <h3>Tune your world, visually</h3>
+        <p>Choose a gamemode and difficulty with the actual in-game textures, flip rules with smooth toggles, and set your seed — all without touching <code>server.properties</code> by hand.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVER TYPES -->
+  <section class="section" id="types">
+    <div class="section-head reveal">
+      <div class="eyebrow">Pick your flavour</div>
+      <h2>Five ways to play</h2>
+      <p class="section-sub">Switch between server types at any time — Zen Host handles the installer, the loader and the folder layout.</p>
+    </div>
+
+    <div class="types-grid">
+      <article class="type-card glass reveal" style="--tint: 110 200 90">
+        <div class="type-icon"><img src="assets/vanilla.png" alt="Vanilla" /></div>
+        <h3>Vanilla</h3>
+        <span class="type-tag">Pure Minecraft</span>
+        <p>The official server, exactly as Mojang ships it. Nothing added, nothing to break.</p>
+      </article>
+
+      <article class="type-card glass reveal" style="--d:.06s; --tint: 200 210 225">
+        <div class="type-icon"><img src="assets/paper.png" alt="Paper" /></div>
+        <h3>Paper</h3>
+        <span class="type-tag">Fast · plugins</span>
+        <p>A tuned fork with big performance wins and full Bukkit &amp; Spigot plugin support.</p>
+      </article>
+
+      <article class="type-card glass reveal" style="--d:.12s; --tint: 214 200 165">
+        <div class="type-icon"><img src="assets/fabric.png" alt="Fabric" /></div>
+        <h3>Fabric</h3>
+        <span class="type-tag">Lightweight mods</span>
+        <p>A slim, fast-updating loader. First to every new Minecraft version, and easy on RAM.</p>
+      </article>
+
+      <article class="type-card glass reveal" style="--d:.18s; --tint: 130 165 200">
+        <div class="type-icon"><img src="assets/forge.webp" alt="Forge" /></div>
+        <h3>Forge</h3>
+        <span class="type-tag">Classic modding</span>
+        <p>The veteran loader behind the biggest modpacks and the deepest mod libraries.</p>
+      </article>
+
+      <article class="type-card glass reveal" style="--d:.24s; --tint: 224 123 60">
+        <div class="type-icon"><img src="assets/neoforge.png" alt="NeoForge" /></div>
+        <h3>NeoForge</h3>
+        <span class="type-tag">Modern fork</span>
+        <p>The community-driven successor to Forge, with faster releases and a cleaner API.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- DOWNLOAD -->
+  <section class="section download" id="download">
+    <div class="section-head reveal">
+      <div class="eyebrow">Download</div>
+      <h2>Ready to host?</h2>
+      <p class="section-sub">Free and open source, for Windows, macOS and Linux — on both Intel and ARM.</p>
+    </div>
+
+    <!-- Primary CTA; retargeted to the visitor's platform by script.js. -->
+    <div class="dl-hero glass glow reveal">
+      <img src="assets/zenlogo.png" alt="" class="dl-logo" />
+      <div class="dl-hero-text">
+        <h3 id="dlPrimaryTitle">Download Zen Host</h3>
+        <p id="dlPrimaryMeta">Pick the build that matches your machine below.</p>
+      </div>
+      <a id="dlPrimaryBtn" class="btn btn-primary btn-lg" href="https://github.com/voxelocity/Zen-Host/releases/latest">↓ Get the latest release</a>
+    </div>
+
+    <div class="dl-grid">
+      <!-- Windows -->
+      <article class="dl-card glass reveal" data-os="win">
+        <header class="dl-card-head">
+          <span class="dl-os-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="3" y="4" width="8" height="7" rx="1" /><rect x="13" y="4" width="8" height="7" rx="1" />
+              <rect x="3" y="13" width="8" height="7" rx="1" /><rect x="13" y="13" width="8" height="7" rx="1" />
+            </svg>
+          </span>
+          <div>
+            <h3>Windows</h3>
+            <p class="dl-req">Windows 10 or 11</p>
+          </div>
+          <span class="dl-badge">Your system</span>
+        </header>
+        <ul class="dl-list">
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-win-x64.exe"><b>Installer</b><span>.exe · 64-bit (Intel/AMD)</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-win-arm64.exe"><b>Installer</b><span>.exe · ARM64</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-win-x64.zip"><b>Portable</b><span>.zip · 64-bit</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-win-arm64.zip"><b>Portable</b><span>.zip · ARM64</span></a></li>
+        </ul>
+      </article>
+
+      <!-- macOS -->
+      <article class="dl-card glass reveal" data-os="mac" style="--d:.06s">
+        <header class="dl-card-head">
+          <span class="dl-os-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="2.5" y="4" width="19" height="12" rx="1.6" /><path d="M2 19.5h20" stroke-linecap="round" />
+            </svg>
+          </span>
+          <div>
+            <h3>macOS</h3>
+            <p class="dl-req">macOS 11 Big Sur or newer</p>
+          </div>
+          <span class="dl-badge">Your system</span>
+        </header>
+        <ul class="dl-list">
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-mac-arm64.dmg"><b>Disk image</b><span>.dmg · Apple Silicon</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-mac-x64.dmg"><b>Disk image</b><span>.dmg · Intel</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-mac-arm64.zip"><b>App bundle</b><span>.zip · Apple Silicon</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-mac-x64.zip"><b>App bundle</b><span>.zip · Intel</span></a></li>
+        </ul>
+        <p class="dl-note">Unsigned build — on first launch, right-click the app and choose <b>Open</b>.</p>
+      </article>
+
+      <!-- Linux -->
+      <article class="dl-card glass reveal" data-os="linux" style="--d:.12s">
+        <header class="dl-card-head">
+          <span class="dl-os-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+              <rect x="2.5" y="4" width="19" height="16" rx="2" />
+              <path d="M6.5 9.5l3 2.5-3 2.5M12 15h5" stroke-linecap="round" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <div>
+            <h3>Linux</h3>
+            <p class="dl-req">glibc-based distros</p>
+          </div>
+          <span class="dl-badge">Your system</span>
+        </header>
+        <ul class="dl-list">
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-linux-x86_64.AppImage"><b>AppImage</b><span>x86_64 · runs anywhere</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-linux-arm64.AppImage"><b>AppImage</b><span>ARM64</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-linux-amd64.deb"><b>Debian package</b><span>.deb · amd64</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-linux-arm64.deb"><b>Debian package</b><span>.deb · arm64</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-linux-x64.tar.gz"><b>Archive</b><span>.tar.gz · x64</span></a></li>
+          <li><a href="https://github.com/voxelocity/Zen-Host/releases/latest/download/Zen%20Host-0.1.0-linux-arm64.tar.gz"><b>Archive</b><span>.tar.gz · arm64</span></a></li>
+        </ul>
+        <p class="dl-note">Mark AppImages executable first: <code>chmod +x Zen&nbsp;Host-*.AppImage</code></p>
+      </article>
+    </div>
+
+    <div class="dl-foot reveal">
+      <p><b>Requires Java 21</b> to actually host a server — Zen Host bundles everything else. Get it from <a href="https://adoptium.net" target="_blank" rel="noopener">adoptium.net</a>, <code>brew install --cask temurin</code>, or your package manager.</p>
+      <p><a class="dl-all" href="https://github.com/voxelocity/Zen-Host/releases" target="_blank" rel="noopener">Browse all releases on GitHub →</a></p>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/zenlogo.png" alt="" />
+        <div>
+          <strong>Zen Host</strong>
+          <p>Minecraft servers, made calm.</p>
+        </div>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="#features">Features</a>
+          <a href="#types">Server types</a>
+          <a href="#download">Download</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="docs.html">Docs</a>
+          <a href="qa.html">Q&amp;A</a>
+          <a href="https://github.com/voxelocity/Zen-Host/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="support.html">Support</a>
+          <a href="https://github.com/voxelocity/Zen-Host" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener">Report an issue</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Zen Host</span>
+      <span class="footer-note">Made for Minecraft Java Edition. Not affiliated with Mojang or Microsoft.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>

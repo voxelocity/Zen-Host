@@ -3,12 +3,24 @@ name: Build
 # macOS and Linux packages have to be produced on their own operating systems —
 # electron-builder cannot make a .dmg or an AppImage from Windows. Each job below
 # runs on native hardware for its target, including real arm64 runners.
+# Website-only commits skip the app build. Path filters are not applied to tag
+# pushes, so a v* release tag always builds regardless of what it touched.
 on:
   push:
     branches: [main]
     tags: ['v*']
+    paths-ignore:
+      - 'site/**'
+      - '**/*.md'
+      - 'LICENSE'
+      - '.github/workflows/pages.yml'
   pull_request:
     branches: [main]
+    paths-ignore:
+      - 'site/**'
+      - '**/*.md'
+      - 'LICENSE'
+      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 jobs:

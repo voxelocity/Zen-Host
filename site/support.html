@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Support — Zen Host</title>
+  <meta name="description" content="Technical support for Zen Host — Java errors, servers that won't start, connection problems, mod crashes, performance tuning and platform-specific fixes." />
+  <meta name="theme-color" content="#080a10" />
+  <link rel="icon" type="image/png" href="assets/zenlogo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <a class="skip-link" href="#faq">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <div class="scroll-progress" id="scrollProgress"></div>
+    <a class="brand" href="index.html">
+      <img src="assets/zenlogo.png" alt="" class="brand-logo" />
+      <span class="brand-name">Zen Host</span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="index.html" class="nav-btn">Home</a>
+      <a href="support.html" class="nav-btn is-active" aria-current="page">Support</a>
+      <a href="qa.html" class="nav-btn">Q&amp;A</a>
+      <a href="docs.html" class="nav-btn">Docs</a>
+      <a href="https://github.com/voxelocity/Zen-Host" class="nav-btn" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <div class="nav-right">
+      <a href="index.html#download" class="btn btn-primary btn-sm nav-cta">Download</a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="eyebrow">Support</div>
+    <h1>Something not working?</h1>
+    <p class="lede">Search the exact error message you're seeing — most of them are one setting away from fixed. For general questions, try the <a href="qa.html" style="color:var(--accent-2)">Q&amp;A</a> instead.</p>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" stroke-linecap="round" />
+      </svg>
+      <input type="search" id="faqSearch" class="search-box" placeholder="Paste an error, or search…  (press / to focus)" autocomplete="off" />
+      <button type="button" class="search-clear" aria-label="Clear search">✕</button>
+    </div>
+
+    <div class="chips">
+      <button type="button" class="chip is-on" data-filter="all">All</button>
+      <button type="button" class="chip" data-filter="java">Java</button>
+      <button type="button" class="chip" data-filter="startup">Won't start</button>
+      <button type="button" class="chip" data-filter="network">Connections</button>
+      <button type="button" class="chip" data-filter="mods">Mods</button>
+      <button type="button" class="chip" data-filter="perf">Performance</button>
+      <button type="button" class="chip" data-filter="platform">Install &amp; OS</button>
+      <button type="button" class="chip" data-filter="data">Files &amp; data</button>
+    </div>
+    <div class="search-count" id="searchCount"></div>
+  </section>
+
+  <main class="section faq-list" id="faq">
+
+    <!-- JAVA -->
+    <div class="faq-group">
+      <h2>Java</h2>
+
+      <details class="faq" data-tags="java startup">
+        <summary class="faq-q">“No Java runtime found” — but I'm sure Java is installed</summary>
+        <div class="faq-a">
+          <p>Zen Host searches, in order: the <code>JAVA_HOME</code> environment variable → <code>/usr/libexec/java_home</code> on macOS → every directory on your <code>PATH</code> → the standard install roots (<code>C:\Program Files\Java</code>, <code>/usr/lib/jvm</code>, <code>/Library/Java/JavaVirtualMachines</code>, Homebrew prefixes and similar).</p>
+          <p>If it still can't find yours, the install is somewhere non-standard. Point <code>JAVA_HOME</code> at it — the folder that <em>contains</em> <code>bin/java</code>, not the <code>java</code> binary itself:</p>
+          <span class="code"><span class="c"># macOS / Linux — add to ~/.zshrc or ~/.bashrc</span>
+export JAVA_HOME=/path/to/jdk-21
+
+<span class="c"># Windows PowerShell (permanent, current user)</span>
+[Environment]::SetEnvironmentVariable('JAVA_HOME','C:\Program Files\Java\jdk-21','User')</span>
+          <p>Restart Zen Host afterwards — the runtime is located once at launch.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="java startup platform">
+        <summary class="faq-q">Java works in my terminal, but Zen Host can't find it</summary>
+        <div class="faq-a">
+          <p>This is the classic macOS and Linux case. A GUI app launched from Finder, the Dock, a <code>.desktop</code> launcher or an AppImage <strong>does not inherit your login-shell <code>PATH</code></strong> — anything you exported in <code>~/.zshrc</code> or <code>~/.bashrc</code> is invisible to it.</p>
+          <p>Zen Host works around this by also checking <code>/usr/libexec/java_home</code> and the standard install directories, so a normal JDK install is found regardless. If yours lives somewhere custom, set <code>JAVA_HOME</code> system-wide rather than in a shell rc file, or install a JDK to a standard location.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="java startup">
+        <summary class="faq-q">“Unsupported class file major version” or “has been compiled by a more recent version of the Java Runtime”</summary>
+        <div class="faq-a">
+          <p>Your Java is <strong>older</strong> than the server jar requires. The number in the message maps to a Java release:</p>
+          <div class="table-wrap">
+            <table>
+              <thead><tr><th>Message says</th><th>Needs Java</th><th>Typical Minecraft</th></tr></thead>
+              <tbody>
+                <tr><td>major version 52</td><td>8</td><td>1.16 and older</td></tr>
+                <tr><td>major version 60</td><td>16</td><td>1.17</td></tr>
+                <tr><td>major version 61</td><td>17</td><td>1.18 – 1.20.4</td></tr>
+                <tr><td>major version 65</td><td>21</td><td>1.20.5 and newer</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p>Install <strong>Java 21</strong> and the whole range is covered — it runs older servers happily.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="java perf startup">
+        <summary class="faq-q">“java.lang.OutOfMemoryError: Java heap space”</summary>
+        <div class="faq-a">
+          <p>The server hit its memory ceiling. Raise the RAM allocation for that server, restart, and watch whether it happens again.</p>
+          <p>If it recurs at 8 GB or more, memory usually isn't the real problem — a misbehaving mod, an enormous view distance, or a runaway entity farm is. Check the console output just before the crash for the mod name.</p>
+          <div class="callout warn"><span class="callout-icon">⚠</span><p>Don't assign more RAM than your machine physically has. The JVM will start and then be killed by the OS, which looks like a random crash with no error.</p></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- WON'T START -->
+    <div class="faq-group">
+      <h2>Server won't start</h2>
+
+      <details class="faq" data-tags="startup">
+        <summary class="faq-q">The console prints “[Server process exited with code 1]” and stops</summary>
+        <div class="faq-a">
+          <p>Exit code 1 means the Java process itself refused to continue. Scroll <strong>up</strong> in the console — the real reason is always printed above the exit line. The usual causes, in order of likelihood:</p>
+          <ol>
+            <li>EULA not accepted (see below)</li>
+            <li>The port is already in use</li>
+            <li>A mod failed to load, or a required dependency is missing</li>
+            <li>Java version too old for that server jar</li>
+            <li>A corrupt <code>server.properties</code> value, e.g. a non-numeric port</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="startup">
+        <summary class="faq-q">“You need to agree to the EULA in order to run the server”</summary>
+        <div class="faq-a">
+          <p>Mojang requires acceptance before a server will boot. Zen Host shows a prompt on first start — accepting it writes <code>eula=true</code> into <code>eula.txt</code> in the server folder.</p>
+          <p>If the message keeps coming back, the file isn't being written. Check that the server folder isn't read-only and isn't inside a synced folder (OneDrive, Dropbox, iCloud) that's locking it.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="startup network">
+        <summary class="faq-q">“Failed to bind to port” or “Address already in use”</summary>
+        <div class="faq-a">
+          <p>Something is already listening on that port — nearly always another Minecraft server, or a copy of this one that didn't shut down.</p>
+          <p>Find it, or just move this server to a free port under <strong>Settings → Network → Server Port</strong>:</p>
+          <span class="code"><span class="c"># Windows</span>
+netstat -ano | findstr :25565
+
+<span class="c"># macOS / Linux</span>
+lsof -i :25565</span>
+          <p>The last column on Windows is the process ID, which you can look up in Task Manager's Details tab.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="startup mods">
+        <summary class="faq-q">Forge or NeoForge installation failed</summary>
+        <div class="faq-a">
+          <p>These types download an installer jar and run it locally to generate the server, so the failure is usually in that step rather than in Zen Host:</p>
+          <ul>
+            <li><strong>No Java on PATH</strong> — the installer is itself a Java program.</li>
+            <li><strong>Antivirus interference</strong> — the installer writes many files quickly, which some scanners block. Whitelist the server folder.</li>
+            <li><strong>Network interruption</strong> — it pulls libraries from Maven repositories while running.</li>
+            <li><strong>That version has no server installer</strong> — very old or very new builds sometimes don't.</li>
+          </ul>
+          <p>The last few installer output lines are included in the error message. Delete the half-built server and try again, or pick a neighbouring loader version.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="startup">
+        <summary class="faq-q">The server says “running” but nothing responds</summary>
+        <div class="faq-a">
+          <p>Zen Host marks a server <em>running</em> when the log prints Minecraft's <code>Done (…)! For help, type "help"</code> line. If it's stuck on <em>starting</em>, the server is still working — first boot generates spawn chunks and can take several minutes on a big modpack.</p>
+          <p>If it reached <em>running</em> and still doesn't accept connections, the problem is the address or the firewall rather than the server. See the connection section below.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="startup data">
+        <summary class="faq-q">Stopping the server takes ages, or it won't stop at all</summary>
+        <div class="faq-a">
+          <p>Stopping sends the <code>stop</code> command so the world saves cleanly. A big world with many loaded chunks genuinely takes a while to flush.</p>
+          <p>If it hasn't exited after <strong>15 seconds</strong>, Zen Host force-kills the process. A force-kill can lose the last few seconds of unsaved changes, so give it the time it asks for when you can.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- CONNECTIONS -->
+    <div class="faq-group">
+      <h2>Connections</h2>
+
+      <details class="faq" data-tags="network">
+        <summary class="faq-q">“Tunnel handshake timed out (bore.pub unreachable)”</summary>
+        <div class="faq-a">
+          <p>Zen Host couldn't reach the public relay. It connects to <code>bore.pub</code> on TCP port <strong>7835</strong>, which some networks block.</p>
+          <ul>
+            <li>On a school, office or campus network, outbound non-standard ports are often firewalled — this is the most common cause.</li>
+            <li>A VPN or strict firewall profile can block it too. Try disabling temporarily to confirm.</li>
+            <li>The public relay is a free community service and is occasionally down.</li>
+          </ul>
+          <p>LAN play keeps working regardless. For a permanent public address, port-forward your router instead and share your own IP.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="network">
+        <summary class="faq-q">Friends on my Wi-Fi can't connect to the LAN address</summary>
+        <div class="faq-a">
+          <p>Almost always the host machine's firewall blocking inbound Java connections.</p>
+          <ul>
+            <li><strong>Windows</strong> — the first launch pops a Windows Defender prompt. If you dismissed it, go to Windows Security → Firewall &amp; network protection → Allow an app, and make sure Java is ticked for <strong>Private</strong> networks.</li>
+            <li><strong>macOS</strong> — System Settings → Network → Firewall → Options, and allow incoming connections for Java.</li>
+            <li><strong>Linux</strong> — <code>sudo ufw allow 25565/tcp</code> if ufw is active.</li>
+          </ul>
+          <p>Also check that everyone is genuinely on the same network — "guest" Wi-Fi networks are usually isolated from the main one, and client isolation on some routers blocks device-to-device traffic entirely.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="network">
+        <summary class="faq-q">“Failed to verify username” or “Invalid session”</summary>
+        <div class="faq-a">
+          <p>The server has <strong>Online Mode</strong> on and Mojang's session servers couldn't confirm the player. Usually one of:</p>
+          <ul>
+            <li>The player isn't signed in with a genuine Minecraft account.</li>
+            <li>Their client needs restarting to refresh an expired session token.</li>
+            <li>Mojang's authentication servers are having an outage.</li>
+          </ul>
+          <p>Turning online mode off works around it, but then usernames are unverified and anyone can join as anyone — pair it with a whitelist if you do.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="network mods">
+        <summary class="faq-q">“Incompatible FML modded server” / “Mod rejections” on join</summary>
+        <div class="faq-a">
+          <p>The client's mod list doesn't match the server's. Forge and NeoForge compare mods and versions during the handshake and refuse mismatches.</p>
+          <p>Every player needs the <strong>same mods at the same versions on the same loader</strong>. The rejection screen lists exactly which mods differ — work through that list. Server-side-only mods are the exception and won't be flagged.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="network">
+        <summary class="faq-q">“Connection refused” or “Connection timed out”</summary>
+        <div class="faq-a">
+          <p><strong>Refused</strong> means the address was reached but nothing is listening — the server isn't running, or the port is wrong.</p>
+          <p><strong>Timed out</strong> means packets never arrived at all — a firewall is dropping them, or the address is unreachable from where they are.</p>
+          <p>Confirm the server shows <em>running</em>, then re-copy the address from the Overview tab. Remember the public tunnel port changes on every restart.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="network">
+        <summary class="faq-q">“Outdated server” / “Outdated client”</summary>
+        <div class="faq-a">
+          <p>The Minecraft versions don't match. The message tells you which side is behind. Change the version in the Minecraft launcher's installation settings to exactly match your server's version — there is no cross-version compatibility in vanilla Minecraft.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- MODS -->
+    <div class="faq-group">
+      <h2>Mods</h2>
+
+      <details class="faq" data-tags="mods startup">
+        <summary class="faq-q">I added mods and now the server won't boot</summary>
+        <div class="faq-a">
+          <p>Work through these in order — the console names the culprit in nearly every case:</p>
+          <ol>
+            <li><strong>Wrong loader.</strong> A Fabric mod on a Forge server (or vice versa) is silently ignored or crashes outright. Bukkit/Spigot plugins never work on modded servers.</li>
+            <li><strong>Wrong Minecraft version.</strong> A 1.20.1 mod will not load on 1.21.</li>
+            <li><strong>Missing dependency.</strong> Most Fabric mods need <strong>Fabric API</strong>; many mods need a shared library mod.</li>
+            <li><strong>Client-only mod.</strong> Shaders, minimaps and UI mods often crash when loaded server-side. Check the mod page for its required side.</li>
+          </ol>
+          <p>Use the toggle in the Mods tab to disable mods in halves — it renames them to <code>.jar.disabled</code> so the loader skips them — and narrow it down without deleting anything.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">Far Render says “No build for Minecraft X yet”</summary>
+        <div class="faq-a">
+          <p>Modrinth has no release of that mod for your exact Minecraft version and loader combination. This is common right after a Minecraft update, and for Voxy, which is <strong>Fabric-only</strong>.</p>
+          <p>The other mods still install — each is fetched independently and reported separately. Chunky is the one that actually matters for pre-generation.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods perf">
+        <summary class="faq-q">Chunky pre-generation seems stuck or never finishes</summary>
+        <div class="faq-a">
+          <p>Pre-generation is genuinely slow — it's generating every chunk in the radius, which for a large radius can take hours and will use most of a CPU core the whole time.</p>
+          <p>Progress is read from Chunky's own console output, so if the server is lagging badly the percentage updates in bursts rather than smoothly. You can cancel at any time; already-generated chunks are kept, and running it again resumes rather than starting over.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">My mods disappeared from the list</summary>
+        <div class="faq-a">
+          <p>The Mods tab lists files in the server's <code>mods</code> folder ending in <code>.jar</code> or <code>.jar.disabled</code>. Anything else — a <code>.zip</code>, or a jar inside a subfolder — isn't shown and won't be loaded by the server either.</p>
+          <p>Unzip modpack archives before adding them, and keep jars directly in <code>mods</code> rather than nested in folders.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- PERFORMANCE -->
+    <div class="faq-group">
+      <h2>Performance</h2>
+
+      <details class="faq" data-tags="perf">
+        <summary class="faq-q">“Can't keep up! Is the server overloaded?”</summary>
+        <div class="faq-a">
+          <p>The server missed its 20-ticks-per-second budget. Occasional messages during chunk generation are normal; constant ones mean it's genuinely overloaded. In rough order of impact:</p>
+          <ul>
+            <li>Drop <strong>Simulation Distance</strong> to 6–8. This is the single biggest win — it controls how far entities and redstone actually tick.</li>
+            <li>Drop <strong>View Distance</strong> to 8–10.</li>
+            <li>Switch to <strong>Paper</strong>, which is substantially faster than vanilla for the same world.</li>
+            <li>Look for entity build-ups — huge mob farms and thousands of dropped items are common culprits.</li>
+            <li>Give it more RAM only if you also see out-of-memory errors.</li>
+          </ul>
+          <p>View distance and simulation distance are separate settings — simulation is the expensive one.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="perf">
+        <summary class="faq-q">The server lags but my CPU isn't maxed out</summary>
+        <div class="faq-a">
+          <p>Expected. Minecraft's main game loop is effectively <strong>single-threaded</strong>, so one core saturates while the rest idle — on an 8-core machine that's around 12% total usage at full load.</p>
+          <p>What matters is single-core speed, not core count. If one core is pinned, the server is CPU-bound no matter what the overall percentage says.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="perf">
+        <summary class="faq-q">Huge lag spikes every few seconds</summary>
+        <div class="faq-a">
+          <p>Usually garbage-collection pauses or disk I/O:</p>
+          <ul>
+            <li><strong>Too much RAM</strong> can be worse than too little — a very large heap means longer collection pauses. Try dropping from 12 GB to 6 GB.</li>
+            <li><strong>Mechanical hard drives</strong> struggle with chunk saving. An SSD makes a large difference.</li>
+            <li><strong>Antivirus scanning</strong> the world folder on every write. Exclude the server directory.</li>
+            <li><strong>Cloud-synced folders</strong> — never keep a live world in OneDrive, Dropbox or iCloud Drive.</li>
+          </ul>
+        </div>
+      </details>
+    </div>
+
+    <!-- INSTALL & OS -->
+    <div class="faq-group">
+      <h2>Install &amp; operating system</h2>
+
+      <details class="faq" data-tags="platform">
+        <summary class="faq-q">macOS: “Zen Host is damaged and can't be opened” or “cannot be opened because the developer cannot be verified”</summary>
+        <div class="faq-a">
+          <p>The builds aren't code-signed with an Apple Developer ID, so Gatekeeper quarantines them. The app is fine — macOS simply can't verify who published it.</p>
+          <p>Right-click (or Control-click) the app and choose <strong>Open</strong>, then <strong>Open</strong> again in the dialog. Double-clicking will not offer that option; the right-click menu is what unlocks it.</p>
+          <p>If the "damaged" wording appears, clear the quarantine attribute directly:</p>
+          <span class="code">xattr -dr com.apple.quarantine "/Applications/Zen Host.app"</span>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="platform">
+        <summary class="faq-q">Windows: “Windows protected your PC” SmartScreen warning</summary>
+        <div class="faq-a">
+          <p>Same cause — the installer isn't signed with a code-signing certificate, so SmartScreen doesn't recognise it yet.</p>
+          <p>Click <strong>More info</strong>, then <strong>Run anyway</strong>. If you'd rather verify first, the installer is built in public by GitHub Actions — the build log for every release is viewable on the repository's Actions tab.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="platform">
+        <summary class="faq-q">Which Windows or macOS build do I need — x64 or ARM?</summary>
+        <div class="faq-a">
+          <ul>
+            <li><strong>Windows</strong> — Settings → System → About → System type. "ARM-based processor" means arm64; anything else is x64.</li>
+            <li><strong>macOS</strong> — Apple menu → About This Mac. An "Apple M1/M2/M3/M4" chip means arm64; "Intel" means x64.</li>
+          </ul>
+          <p>The download section detects this automatically and points the main button at the right file, but every build stays listed if you need a different one.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="platform">
+        <summary class="faq-q">Linux: the AppImage won't launch</summary>
+        <div class="faq-a">
+          <p>Two things to check. First, it needs the executable bit:</p>
+          <span class="code">chmod +x "Zen Host-0.1.0-linux-x86_64.AppImage"
+./"Zen Host-0.1.0-linux-x86_64.AppImage"</span>
+          <p>Second, AppImages need FUSE. On Ubuntu 22.04 and newer:</p>
+          <span class="code">sudo apt install libfuse2</span>
+          <p>To skip FUSE entirely, run it with <code>--appimage-extract-and-run</code>, or use the <code>.deb</code> or <code>.tar.gz</code> build instead.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="platform">
+        <summary class="faq-q">Linux: the .deb won't install — dependency errors</summary>
+        <div class="faq-a">
+          <p><code>dpkg -i</code> doesn't resolve dependencies. Either fix them afterwards or let apt handle it from the start:</p>
+          <span class="code">sudo apt install ./"Zen Host-0.1.0-linux-amd64.deb"
+
+<span class="c"># or, after a failed dpkg -i</span>
+sudo apt --fix-broken install</span>
+          <p>On non-Debian distributions (Fedora, Arch, openSUSE) use the AppImage or the <code>.tar.gz</code> — there's no <code>.rpm</code> build.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="platform">
+        <summary class="faq-q">The app opens to a blank or black window</summary>
+        <div class="faq-a">
+          <p>Usually a GPU driver problem with Electron's hardware acceleration. Launch it once with acceleration off to confirm:</p>
+          <span class="code"><span class="c"># Windows</span>
+"%LOCALAPPDATA%\Programs\zen-host\Zen Host.exe" --disable-gpu
+
+<span class="c"># macOS</span>
+"/Applications/Zen Host.app/Contents/MacOS/Zen Host" --disable-gpu
+
+<span class="c"># Linux</span>
+./"Zen Host-0.1.0-linux-x86_64.AppImage" --disable-gpu</span>
+          <p>If that fixes it, update your graphics drivers. On Linux, a compositor conflict under Wayland can cause the same thing — try <code>--ozone-platform=x11</code>.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="platform data">
+        <summary class="faq-q">How do I completely uninstall Zen Host?</summary>
+        <div class="faq-a">
+          <p>Removing the app doesn't delete your servers — that's deliberate, so an update never destroys a world. To remove everything, delete the data folder too:</p>
+          <ul>
+            <li><strong>Windows</strong> — uninstall from Settings → Apps, then delete <code>%APPDATA%\zen-host</code></li>
+            <li><strong>macOS</strong> — drag the app to the Trash, then delete <code>~/Library/Application Support/zen-host</code></li>
+            <li><strong>Linux</strong> — <code>sudo apt remove zen-host</code> (or delete the AppImage), then <code>~/.config/zen-host</code></li>
+          </ul>
+          <div class="callout warn"><span class="callout-icon">⚠</span><p>That data folder contains every world you've created. Copy anything you want to keep before deleting it.</p></div>
+        </div>
+      </details>
+    </div>
+
+    <!-- FILES & DATA -->
+    <div class="faq-group">
+      <h2>Files &amp; data</h2>
+
+      <details class="faq" data-tags="data">
+        <summary class="faq-q">Where are the logs when I need to report a bug?</summary>
+        <div class="faq-a">
+          <p>Minecraft writes its own logs inside each server's folder, which is what you'll want for a crash:</p>
+          <ul>
+            <li><code>logs/latest.log</code> — the most recent run</li>
+            <li><code>crash-reports/</code> — written when the server crashes outright</li>
+          </ul>
+          <p>Open the server folder from the Overview tab to get to them. When filing an issue on <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener">GitHub</a>, attach <code>latest.log</code> along with your OS, Zen Host version, server type and Minecraft version.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="data">
+        <summary class="faq-q">A setting I changed didn't take effect</summary>
+        <div class="faq-a">
+          <p><code>server.properties</code> is read by Minecraft <strong>once at startup</strong>, so changes need a server restart. The exceptions are things applied through commands — operator changes are issued live, for instance.</p>
+          <p>Note also that world-generation settings (seed, world type, structures) only affect terrain that hasn't been generated yet. Changing the seed of an existing world does nothing.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="data">
+        <summary class="faq-q">My world is corrupted or won't load</summary>
+        <div class="faq-a">
+          <p>Usually a region file damaged by a force-kill, a power cut, or cloud-sync software writing underneath the server.</p>
+          <ol>
+            <li>Stop the server and take a copy of the whole <code>world</code> folder before touching anything.</li>
+            <li>Delete <code>world/session.lock</code> — a stale lock alone can block loading, and it's regenerated automatically.</li>
+            <li>If a specific region is broken, the console names the file. Deleting that <code>.mca</code> file regenerates that area as fresh terrain and loses whatever was built there.</li>
+            <li><code>level.dat_old</code> is an automatic backup of <code>level.dat</code> — renaming it over the broken one sometimes recovers world metadata.</li>
+          </ol>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="data">
+        <summary class="faq-q">Can I move a server to another computer?</summary>
+        <div class="faq-a">
+          <p>Yes. Install Zen Host on the new machine, create a server of the <strong>same type and Minecraft version</strong>, stop it, then copy the old server's <code>world</code> folder, <code>server.properties</code>, <code>ops.json</code> and <code>mods</code> folder into the new server's folder.</p>
+          <p>Copying the whole folder verbatim won't work on its own, because Zen Host tracks servers by an internal ID in its own index file.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="data platform">
+        <summary class="faq-q">Does updating Zen Host affect my servers?</summary>
+        <div class="faq-a">
+          <p>No. Servers live in the user-data directory, which installers don't touch — updating in place keeps every world, mod and setting.</p>
+          <p>Backing up that folder before a major update is still cheap insurance.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="no-results">
+      <h3>Nothing matched that search</h3>
+      <p>Try a shorter phrase or a single keyword — searching <em>“port”</em> or <em>“java”</em> catches more than a full error message. You can also <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener" style="color:var(--accent-2)">open an issue on GitHub</a>.</p>
+    </div>
+  </main>
+
+  <section class="page-cta">
+    <div class="page-cta-inner glass">
+      <div>
+        <h3>Still not solved?</h3>
+        <p>Open an issue with your <code>latest.log</code>, OS and server type — that's usually enough to pin it down.</p>
+      </div>
+      <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener" class="btn btn-primary">Report an issue →</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/zenlogo.png" alt="" />
+        <div>
+          <strong>Zen Host</strong>
+          <p>Minecraft servers, made calm.</p>
+        </div>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="index.html#features">Features</a>
+          <a href="index.html#types">Server types</a>
+          <a href="index.html#download">Download</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="docs.html">Docs</a>
+          <a href="qa.html">Q&amp;A</a>
+          <a href="https://github.com/voxelocity/Zen-Host/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="support.html">Support</a>
+          <a href="https://github.com/voxelocity/Zen-Host" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener">Report an issue</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Zen Host</span>
+      <span class="footer-note">Made for Minecraft Java Edition. Not affiliated with Mojang or Microsoft.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="pages.js"></script>
+</body>
+</html>

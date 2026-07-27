@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Q&amp;A — Zen Host</title>
+  <meta name="description" content="Common questions about Zen Host — server types, mods, letting friends join, world files and more." />
+  <meta name="theme-color" content="#080a10" />
+  <link rel="icon" type="image/png" href="assets/zenlogo.png" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-glow"></div>
+  <div class="bg-grid"></div>
+  <div class="bg-noise"></div>
+
+  <a class="skip-link" href="#faq">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <div class="scroll-progress" id="scrollProgress"></div>
+    <a class="brand" href="index.html">
+      <img src="assets/zenlogo.png" alt="" class="brand-logo" />
+      <span class="brand-name">Zen Host</span>
+    </a>
+    <nav class="nav-links" id="navLinks" aria-label="Primary">
+      <a href="index.html" class="nav-btn">Home</a>
+      <a href="support.html" class="nav-btn">Support</a>
+      <a href="qa.html" class="nav-btn is-active" aria-current="page">Q&amp;A</a>
+      <a href="docs.html" class="nav-btn">Docs</a>
+      <a href="https://github.com/voxelocity/Zen-Host" class="nav-btn" target="_blank" rel="noopener">GitHub ↗</a>
+    </nav>
+    <div class="nav-right">
+      <a href="index.html#download" class="btn btn-primary btn-sm nav-cta">Download</a>
+      <button type="button" class="nav-toggle" id="navToggle" aria-label="Menu" aria-expanded="false" aria-controls="navLinks">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </header>
+
+  <section class="page-hero">
+    <div class="eyebrow">Questions &amp; answers</div>
+    <h1>Everything you might<br />wonder about Zen Host</h1>
+    <p class="lede">The short answers. If something is broken or throwing an error, the <a href="support.html" style="color:var(--accent-2)">Support page</a> has the technical fixes.</p>
+
+    <div class="search-wrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="11" cy="11" r="7" /><path d="M20 20l-3.5-3.5" stroke-linecap="round" />
+      </svg>
+      <input type="search" id="faqSearch" class="search-box" placeholder="Search questions…  (press / to focus)" autocomplete="off" />
+      <button type="button" class="search-clear" aria-label="Clear search">✕</button>
+    </div>
+
+    <div class="chips">
+      <button type="button" class="chip is-on" data-filter="all">All</button>
+      <button type="button" class="chip" data-filter="basics">Basics</button>
+      <button type="button" class="chip" data-filter="servers">Servers</button>
+      <button type="button" class="chip" data-filter="playing">Playing together</button>
+      <button type="button" class="chip" data-filter="mods">Mods</button>
+      <button type="button" class="chip" data-filter="files">Files &amp; worlds</button>
+    </div>
+    <div class="search-count" id="searchCount"></div>
+  </section>
+
+  <main class="section faq-list" id="faq">
+
+    <!-- BASICS -->
+    <div class="faq-group">
+      <h2>Basics</h2>
+
+      <details class="faq" data-tags="basics">
+        <summary class="faq-q">What exactly is Zen Host?</summary>
+        <div class="faq-a">
+          <p>A desktop app that creates, runs and manages Minecraft <strong>Java Edition</strong> servers for you. It downloads the right server files, writes the config, launches the Java process and gives you a dashboard with a live console — so you never touch a command line or hand-edit <code>server.properties</code>.</p>
+          <p>It runs the server <strong>on your own machine</strong>. It isn't a paid hosting service, and nothing is uploaded to anyone else's computer.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="basics">
+        <summary class="faq-q">Is it free? Is there a catch?</summary>
+        <div class="faq-a">
+          <p>Free, and open source under the MIT licence. No account, no subscription, no telemetry. The full source is on <a href="https://github.com/voxelocity/Zen-Host" target="_blank" rel="noopener">GitHub</a>.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="basics">
+        <summary class="faq-q">Does it work with Bedrock Edition (phones, console, Windows 10/11 Store)?</summary>
+        <div class="faq-a">
+          <p>No — Zen Host runs <strong>Java Edition</strong> servers only. Bedrock uses a completely different server program and network protocol, so Bedrock clients can't join a Java server without a third-party proxy such as GeyserMC (which Zen Host doesn't manage for you).</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="basics">
+        <summary class="faq-q">Which operating systems are supported?</summary>
+        <div class="faq-a">
+          <p>Windows 10/11, macOS 11 Big Sur or newer, and glibc-based Linux distributions — each on both <strong>64-bit Intel/AMD and ARM</strong>. Apple Silicon Macs and ARM Windows laptops get native builds, not emulated ones.</p>
+          <p>Every format is listed on the <a href="index.html#download">download section</a>.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="basics">
+        <summary class="faq-q">Do I need to install Java?</summary>
+        <div class="faq-a">
+          <p>Yes. Zen Host bundles everything it needs to run <em>itself</em>, but the Minecraft server is a Java program, so a JDK has to be present. Install <strong>Java 21</strong> — Minecraft 1.20.5 and newer require it, and it also runs older versions fine.</p>
+          <p>Zen Host looks for Java in <code>JAVA_HOME</code>, macOS's <code>/usr/libexec/java_home</code>, your <code>PATH</code>, and the standard install directories, so it usually finds an existing install with no setup.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="basics">
+        <summary class="faq-q">How much does a server slow my computer down?</summary>
+        <div class="faq-a">
+          <p>A Minecraft server is mostly single-threaded CPU work plus whatever RAM you assign it. A 2 GB vanilla server with a handful of players is light; a big modpack with 8 GB and a large view distance is not.</p>
+          <p>Assign at most <strong>half to two-thirds of your physical RAM</strong>, and remember the Minecraft <em>client</em> needs its own share if you're playing on the same machine.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- SERVERS -->
+    <div class="faq-group">
+      <h2>Servers</h2>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">Which server type should I pick?</summary>
+        <div class="faq-a">
+          <ul>
+            <li><strong>Vanilla</strong> — the official Mojang server. Nothing added, nothing that can break. Pick this if you just want normal Minecraft.</li>
+            <li><strong>Paper</strong> — a performance-tuned fork that also runs Bukkit/Spigot <em>plugins</em>. Best for a survival server with several players.</li>
+            <li><strong>Fabric</strong> — a light, fast-updating mod loader. First to support new Minecraft versions.</li>
+            <li><strong>Forge</strong> — the veteran loader behind most large modpacks.</li>
+            <li><strong>NeoForge</strong> — the community-run successor to Forge for 1.20.2+, with a cleaner API.</li>
+          </ul>
+          <p>Mods and plugins are <strong>not interchangeable</strong>: a Fabric mod won't load on Paper, and a Bukkit plugin won't load on Forge.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">Can I change a server's type or version after creating it?</summary>
+        <div class="faq-a">
+          <p>Not from the UI. The type determines the whole folder layout and how the server is launched, so switching would mean replacing the server files entirely.</p>
+          <p>Create a new server of the type you want, then copy your <code>world</code> folder across from the old one. World data itself is type-agnostic, though modded worlds will lose blocks and items from mods you don't carry over.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">Which Minecraft versions can I run?</summary>
+        <div class="faq-a">
+          <p>The version list is fetched live from each project's own API, so it's always current:</p>
+          <ul>
+            <li><strong>Vanilla</strong> — every release listed in Mojang's version manifest (snapshots are filtered out).</li>
+            <li><strong>Paper</strong> — every version PaperMC currently builds for, newest first.</li>
+            <li><strong>Fabric / Forge / NeoForge</strong> — whatever each loader publishes for that Minecraft version.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">How much RAM should I give a server?</summary>
+        <div class="faq-a">
+          <p>Rough starting points:</p>
+          <ul>
+            <li><strong>Vanilla or Paper, 1–5 players</strong> — 2 GB</li>
+            <li><strong>Paper with plugins, 5–15 players</strong> — 4 GB</li>
+            <li><strong>Small mod set (10–40 mods)</strong> — 4–6 GB</li>
+            <li><strong>Large modpack (150+ mods)</strong> — 8 GB or more</li>
+          </ul>
+          <p>More is not automatically better — a very large heap can make garbage-collection pauses worse. Raise it only if you actually see out-of-memory errors in the console.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">What is the EULA prompt?</summary>
+        <div class="faq-a">
+          <p>Mojang requires anyone running a Minecraft server to accept their <a href="https://aka.ms/MinecraftEULA" target="_blank" rel="noopener">End User Licence Agreement</a>. The server refuses to boot until it sees <code>eula=true</code> in a file called <code>eula.txt</code>.</p>
+          <p>Accepting the prompt in Zen Host writes that file for you. It's a one-time thing per server.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">Can I run more than one server at once?</summary>
+        <div class="faq-a">
+          <p>Yes, as long as each one uses a <strong>different port</strong> and your machine has the RAM for all of them. Change <code>server-port</code> under Settings → Network before starting the second server, otherwise it will fail to bind.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="servers">
+        <summary class="faq-q">What happens to my server when I close Zen Host?</summary>
+        <div class="faq-a">
+          <p>Running servers are stopped cleanly when the app quits, so the world saves properly and no stray Java process is left behind.</p>
+          <p>On macOS, closing the <em>window</em> doesn't quit the app — the server keeps running and you can reopen the window from the Dock. Use <strong>Cmd&nbsp;+&nbsp;Q</strong> to actually quit and shut the server down.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- PLAYING TOGETHER -->
+    <div class="faq-group">
+      <h2>Playing together</h2>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">How do my friends join my server?</summary>
+        <div class="faq-a">
+          <p>Three addresses, depending on where they are:</p>
+          <ul>
+            <li><strong>Same computer</strong> — <code>localhost</code></li>
+            <li><strong>Same Wi-Fi / network</strong> — the LAN address shown on the Overview tab, like <code>192.168.1.24:25565</code></li>
+            <li><strong>Anywhere else</strong> — the public address, like <code>bore.pub:41287</code></li>
+          </ul>
+          <p>Each has a copy button on the Overview tab.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">Do I have to port-forward my router?</summary>
+        <div class="faq-a">
+          <p>No. When a server is marked <strong>public</strong>, Zen Host opens a tunnel to the free <code>bore.pub</code> relay and gives you an address that works from anywhere — no router settings, no firewall rules, no dynamic-DNS.</p>
+          <p>Port forwarding is still an option if you'd rather have a fixed address and slightly lower latency.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">Is my public address the same every time?</summary>
+        <div class="faq-a">
+          <p>No — the relay assigns a random port each time the server starts, so <code>bore.pub:41287</code> might be <code>bore.pub:38104</code> tomorrow. Re-copy it from the Overview tab and send the new one to your friends after each restart.</p>
+          <p>Port-forwarding your own router is the way to get a permanent address.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">Is the public tunnel safe? Who can see my server?</summary>
+        <div class="faq-a">
+          <p>The tunnel simply forwards traffic between the relay and your server — anyone who has the address can attempt to connect, exactly as with a port-forwarded server. It isn't listed or advertised anywhere, but it also isn't secret.</p>
+          <p>If you want to be certain only invited people get in, turn on the <strong>whitelist</strong> under Settings → Network and add your friends. You can also flip the server back to private at any time to close the tunnel.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">Can players without a Minecraft account join?</summary>
+        <div class="faq-a">
+          <p>Only if you turn <strong>Online Mode</strong> off under Settings → Network, which disables Mojang account verification.</p>
+          <p>Be aware of the trade-off: with online mode off, anyone can connect using <em>any</em> username, including yours. Player identity is no longer verified, so pair it with a whitelist if you use it at all.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">How do I give myself (or a friend) admin powers?</summary>
+        <div class="faq-a">
+          <p>Open the <strong>Operators</strong> tab, type the Minecraft username and add it. Zen Host looks the account's UUID up from Mojang and writes <code>ops.json</code> for you, so it works even while the server is stopped.</p>
+          <p>Operator levels run 1–4; level 4 is full access, including <code>/stop</code>. If the server is running, the <code>op</code> command is issued immediately so it takes effect without a restart.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="playing">
+        <summary class="faq-q">How do I set up a whitelist?</summary>
+        <div class="faq-a">
+          <p>Turn on <strong>Whitelist Enabled</strong> under Settings → Network, then add players from the console tab with <code>whitelist add PlayerName</code>. Turn on <strong>Enforce Whitelist</strong> as well to kick anyone already connected who isn't on the list.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- MODS -->
+    <div class="faq-group">
+      <h2>Mods</h2>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">How do I install mods?</summary>
+        <div class="faq-a">
+          <p>Open the <strong>Mods</strong> tab and drag <code>.jar</code> files straight onto the window, or use the browse button. They're copied into the server's <code>mods</code> folder.</p>
+          <p>Restart the server for changes to take effect. The tab has a toggle to disable a mod without deleting it (it's renamed to <code>.jar.disabled</code>, which the loader ignores).</p>
+          <p>This applies to Fabric, Forge and NeoForge servers. Paper uses <em>plugins</em> instead, which live in a <code>plugins</code> folder.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">Do my friends need the same mods installed?</summary>
+        <div class="faq-a">
+          <p>For most mods, yes — anything that adds blocks, items or entities has to be on both the client and the server, at matching versions and on the same loader. Players without them will be rejected at login.</p>
+          <p>Some mods are server-side only (performance tweaks, world pre-generators, moderation tools) and need nothing on the client. Mod pages usually state which side they're required on.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">Where do I get mods from?</summary>
+        <div class="faq-a">
+          <p><a href="https://modrinth.com" target="_blank" rel="noopener">Modrinth</a> and <a href="https://www.curseforge.com/minecraft" target="_blank" rel="noopener">CurseForge</a> are the two standard sources. Always download the build matching your <strong>Minecraft version</strong> and <strong>loader</strong>, and take the server-side file where one is offered separately.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">Does Fabric need Fabric API?</summary>
+        <div class="faq-a">
+          <p>Most Fabric mods do. It's a separate mod jar that you install the same way as any other — download the build matching your Minecraft version and drop it in with the rest. A missing Fabric API is one of the most common reasons a Fabric server exits on startup.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">What is the Far Render tab?</summary>
+        <div class="faq-a">
+          <p>A one-click installer for the server-side half of extended-view-distance setups. It fetches builds matching your server's version and loader from Modrinth:</p>
+          <ul>
+            <li><strong>Distant Horizons</strong> — level-of-detail terrain far beyond normal view distance</li>
+            <li><strong>Voxy</strong> — a similar LOD renderer (Fabric only)</li>
+            <li><strong>Chunky</strong> — pre-generates chunks so distant terrain already exists</li>
+          </ul>
+          <p>You can then run a pre-generation pass over a radius around spawn and watch its progress. Players still need the matching client mod to actually <em>see</em> the extra distance.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="mods">
+        <summary class="faq-q">Can I install a whole modpack?</summary>
+        <div class="faq-a">
+          <p>Yes, manually. Create a server on the pack's loader and Minecraft version, then copy the pack's <strong>server-side</strong> mods into the Mods tab. Most packs publish a dedicated server download containing exactly the right jars.</p>
+          <p>Zen Host doesn't yet read CurseForge or Modrinth <code>.mrpack</code> modpack files directly.</p>
+        </div>
+      </details>
+    </div>
+
+    <!-- FILES & WORLDS -->
+    <div class="faq-group">
+      <h2>Files &amp; worlds</h2>
+
+      <details class="faq" data-tags="files">
+        <summary class="faq-q">Where are my server files stored?</summary>
+        <div class="faq-a">
+          <p>Each server gets its own folder under the app's user-data directory:</p>
+          <ul>
+            <li><strong>Windows</strong> — <code>%APPDATA%\zen-host\servers\</code></li>
+            <li><strong>macOS</strong> — <code>~/Library/Application Support/zen-host/servers/</code></li>
+            <li><strong>Linux</strong> — <code>~/.config/zen-host/servers/</code></li>
+          </ul>
+          <p>The Overview tab has a button that opens the folder directly. Inside it's an ordinary Minecraft server — server jar, <code>server.properties</code>, <code>world</code>, <code>mods</code> — so any normal Minecraft tooling works on it.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="files">
+        <summary class="faq-q">How do I back up a world?</summary>
+        <div class="faq-a">
+          <p><strong>Stop the server first</strong> so everything is flushed to disk, then copy the <code>world</code> folder somewhere safe. That folder is the entire save — terrain, inventories, player data.</p>
+          <p>Copying it while the server is running risks catching a half-written region file.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="files">
+        <summary class="faq-q">Can I bring in an existing single-player world?</summary>
+        <div class="faq-a">
+          <p>Yes. Create a server on the same Minecraft version, stop it, open the server folder, and replace the <code>world</code> folder with your save (the folder from <code>.minecraft/saves/</code>). Make sure the new folder is named to match the <strong>World Name</strong> setting, which is <code>world</code> by default.</p>
+          <p>Single-player saves keep the Nether and End inside the same folder, so they come across with it.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="files">
+        <summary class="faq-q">How do I start a fresh world?</summary>
+        <div class="faq-a">
+          <p>Stop the server, open its folder, and delete (or rename) the <code>world</code> folder. A brand-new one is generated on the next start.</p>
+          <p>To generate a specific world, set <strong>World Seed</strong> under Settings → World before starting. Changing the seed does nothing to terrain that already exists.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="files">
+        <summary class="faq-q">Does deleting a server delete the world?</summary>
+        <div class="faq-a">
+          <p>Yes — deleting a server removes its entire folder, world included, and it isn't recoverable from inside the app. Copy anything you want to keep out first.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="files">
+        <summary class="faq-q">Can I edit server.properties by hand?</summary>
+        <div class="faq-a">
+          <p>You can, while the server is stopped. Zen Host reads the file fresh each time, so hand-made changes are picked up and shown in the Settings tab.</p>
+          <p>Keys the visual editor doesn't recognise are preserved and shown as plain text fields, so nothing gets dropped. Note that saving from the app rewrites the file with keys sorted alphabetically and strips comments.</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="no-results">
+      <h3>No answers matched that</h3>
+      <p>Try a different word, or check <a href="support.html" style="color:var(--accent-2)">Support</a> for technical troubleshooting.</p>
+    </div>
+  </main>
+
+  <section class="page-cta">
+    <div class="page-cta-inner glass">
+      <div>
+        <h3>Still stuck?</h3>
+        <p>The Support page covers error messages, crashes and connection problems in detail.</p>
+      </div>
+      <a href="support.html" class="btn btn-primary">Go to Support →</a>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <img src="assets/zenlogo.png" alt="" />
+        <div>
+          <strong>Zen Host</strong>
+          <p>Minecraft servers, made calm.</p>
+        </div>
+      </div>
+      <nav class="footer-cols" aria-label="Footer">
+        <div class="footer-col">
+          <h4>Product</h4>
+          <a href="index.html#features">Features</a>
+          <a href="index.html#types">Server types</a>
+          <a href="index.html#download">Download</a>
+        </div>
+        <div class="footer-col">
+          <h4>Resources</h4>
+          <a href="docs.html">Docs</a>
+          <a href="qa.html">Q&amp;A</a>
+          <a href="https://github.com/voxelocity/Zen-Host/releases" target="_blank" rel="noopener">Releases</a>
+        </div>
+        <div class="footer-col">
+          <h4>Community</h4>
+          <a href="support.html">Support</a>
+          <a href="https://github.com/voxelocity/Zen-Host" target="_blank" rel="noopener">GitHub</a>
+          <a href="https://github.com/voxelocity/Zen-Host/issues" target="_blank" rel="noopener">Report an issue</a>
+        </div>
+      </nav>
+    </div>
+    <div class="footer-bottom">
+      <span>© <span id="year">2026</span> Zen Host</span>
+      <span class="footer-note">Made for Minecraft Java Edition. Not affiliated with Mojang or Microsoft.</span>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+  <script src="pages.js"></script>
+</body>
+</html>
