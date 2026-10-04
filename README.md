@@ -1,5 +1,7 @@
 # 🟩 Zen Host
 
+https://voxelocity.github.io/Zen-Host/
+
 A desktop app to create, host, and manage your own Minecraft **Java Edition** servers with a friendly visual UI — a dashboard with a copyable connect address, drag-and-drop mods, visual world/operator settings, and a live console. No command line required.
 
 ![Electron desktop app](https://img.shields.io/badge/Electron-desktop-3ddc84)
