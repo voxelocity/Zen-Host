@@ -102,11 +102,20 @@ export JAVA_HOME=/path/to/jdk-21
                 <tr><td>major version 52</td><td>8</td><td>1.16 and older</td></tr>
                 <tr><td>major version 60</td><td>16</td><td>1.17</td></tr>
                 <tr><td>major version 61</td><td>17</td><td>1.18 – 1.20.4</td></tr>
-                <tr><td>major version 65</td><td>21</td><td>1.20.5 and newer</td></tr>
+                <tr><td>major version 65</td><td>21</td><td>1.20.5 – 1.21.11</td></tr>
+                <tr><td>major version 69</td><td>25</td><td>26.1 and newer</td></tr>
               </tbody>
             </table>
           </div>
-          <p>Install <strong>Java 21</strong> and the whole range is covered — it runs older servers happily.</p>
+          <p>Install the Java listed for your server's version. Zen Host normally catches this before starting and tells you which Java is missing; if several are installed it picks the right one per server.</p>
+        </div>
+      </details>
+
+      <details class="faq" data-tags="startup update">
+        <summary class="faq-q">“This version of Zen Host is most likely out of date”</summary>
+        <div class="faq-a">
+          <p>Zen Host shows this when a newer release is available, or when one of the services it downloads servers from (Mojang, PaperMC, Fabric, Forge, NeoForge or Modrinth) starts answering in a way your version doesn't understand. That almost always means the service changed its API after your version was released.</p>
+          <p>Download the latest version from the <a href="index.html#download">download section</a> and install it over the old one — your servers and worlds are kept.</p>
         </div>
       </details>
 
@@ -380,8 +389,8 @@ lsof -i :25565</span>
         <summary class="faq-q">Linux: the AppImage won't launch</summary>
         <div class="faq-a">
           <p>Two things to check. First, it needs the executable bit:</p>
-          <span class="code">chmod +x "Zen Host-0.1.0-linux-x86_64.AppImage"
-./"Zen Host-0.1.0-linux-x86_64.AppImage"</span>
+          <span class="code">chmod +x "Zen Host-0.3.0-linux-x86_64.AppImage"
+./"Zen Host-0.3.0-linux-x86_64.AppImage"</span>
           <p>Second, AppImages need FUSE. On Ubuntu 22.04 and newer:</p>
           <span class="code">sudo apt install libfuse2</span>
           <p>To skip FUSE entirely, run it with <code>--appimage-extract-and-run</code>, or use the <code>.deb</code> or <code>.tar.gz</code> build instead.</p>
@@ -392,7 +401,7 @@ lsof -i :25565</span>
         <summary class="faq-q">Linux: the .deb won't install — dependency errors</summary>
         <div class="faq-a">
           <p><code>dpkg -i</code> doesn't resolve dependencies. Either fix them afterwards or let apt handle it from the start:</p>
-          <span class="code">sudo apt install ./"Zen Host-0.1.0-linux-amd64.deb"
+          <span class="code">sudo apt install ./"Zen Host-0.3.0-linux-amd64.deb"
 
 <span class="c"># or, after a failed dpkg -i</span>
 sudo apt --fix-broken install</span>
@@ -411,7 +420,7 @@ sudo apt --fix-broken install</span>
 "/Applications/Zen Host.app/Contents/MacOS/Zen Host" --disable-gpu
 
 <span class="c"># Linux</span>
-./"Zen Host-0.1.0-linux-x86_64.AppImage" --disable-gpu</span>
+./"Zen Host-0.3.0-linux-x86_64.AppImage" --disable-gpu</span>
           <p>If that fixes it, update your graphics drivers. On Linux, a compositor conflict under Wayland can cause the same thing — try <code>--ozone-platform=x11</code>.</p>
         </div>
       </details>

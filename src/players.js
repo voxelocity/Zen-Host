@@ -1,6 +1,7 @@
 'use strict';
 
 const crypto = require('crypto');
+const { USER_AGENT } = require('./http');
 
 // Format 32 hex chars into a dashed UUID.
 function dash(hex) {
@@ -19,7 +20,7 @@ function offlineUuid(name) {
 async function mojangUuid(name) {
   try {
     const res = await fetch(`https://api.mojang.com/users/profiles/minecraft/${encodeURIComponent(name)}`,
-      { headers: { 'User-Agent': 'Zen-Host' } });
+      { headers: { 'User-Agent': USER_AGENT } });
     if (res.status !== 200) return null;
     const data = await res.json();
     if (!data || !data.id) return null;

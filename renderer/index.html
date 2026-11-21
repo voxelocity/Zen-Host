@@ -21,10 +21,21 @@
       <button id="newServerBtn" class="btn btn-primary btn-block">+ New Server</button>
       <div class="sidebar-label">Your Servers</div>
       <div id="serverList" class="server-list"></div>
+      <div id="appVersion" class="app-version"></div>
     </aside>
 
     <!-- Main panel -->
     <main id="main">
+      <div id="outdatedBanner" class="outdated-banner hidden" role="alert">
+        <span class="ob-icon">⚠</span>
+        <div class="ob-text">
+          <div id="obMessage"></div>
+          <div id="obDetail" class="ob-detail"></div>
+        </div>
+        <button id="obDownloadBtn" class="btn btn-primary">↓ Get the latest version</button>
+        <button id="obCloseBtn" class="btn btn-ghost" title="Dismiss">✕</button>
+      </div>
+
       <div id="emptyState" class="empty-state glass">
         <div class="empty-art">⛏</div>
         <h1>Welcome to Zen Host</h1>
@@ -131,6 +142,15 @@
           <div class="panel-toolbar">
             <span class="muted">Seed &amp; world type only apply to a freshly generated world. Other rules apply on next start.</span>
             <button id="saveWorldBtn" class="btn btn-primary">Save World Settings</button>
+          </div>
+          <div class="world-block glass replace-world">
+            <div class="world-section-title">Use a different world</div>
+            <p class="muted" style="margin-bottom:12px">Swap in an existing save (a folder or .zip). The current world is moved to <code>world-backups</code>, not deleted. Stop the server first.</p>
+            <div id="replaceDrop" class="world-drop">
+              <div><strong>Drop a world folder or .zip here</strong></div>
+              <div class="muted">or <button id="replaceWorldFolder" class="link-btn">choose a folder</button> · <button id="replaceWorldZip" class="link-btn">choose a .zip</button></div>
+            </div>
+            <div id="replaceNotice" class="notice hidden" style="margin-top:12px"></div>
           </div>
           <div id="worldForm" class="world-form"></div>
         </section>
@@ -244,6 +264,26 @@
           </button>
         </div>
       </label>
+      <div class="field">
+        <span>World</span>
+        <div class="type-cards cols-2" id="worldSourceCards">
+          <button class="type-card selected" data-src="new">
+            <span class="type-name">Generate new</span>
+            <span class="type-desc">A fresh world</span>
+          </button>
+          <button class="type-card" data-src="existing">
+            <span class="type-name">Use existing</span>
+            <span class="type-desc">A save folder or .zip</span>
+          </button>
+        </div>
+        <div id="worldPick" class="world-pick hidden">
+          <div id="worldDrop" class="world-drop">
+            <div><strong>Drop a world folder or .zip here</strong></div>
+            <div class="muted">or <button id="pickWorldFolder" class="link-btn">choose a folder</button> · <button id="pickWorldZip" class="link-btn">choose a .zip</button></div>
+          </div>
+          <div id="worldInfo" class="notice hidden"></div>
+        </div>
+      </div>
       <div class="field-row">
         <label class="field">
           <span>Minecraft version</span>

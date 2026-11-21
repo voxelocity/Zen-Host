@@ -119,22 +119,44 @@ document.querySelectorAll('video').forEach((v) => videoIo.observe(v));
 // Point the primary download button at the visitor's platform and flag the
 // matching card. Every option stays listed, so a wrong guess costs nothing.
 const RELEASE_BASE = 'https://github.com/voxelocity/Zen-Host/releases/latest/download/';
-const VERSION = '0.1.0';
+const LATEST_RELEASE_API = 'https://api.github.com/repos/voxelocity/Zen-Host/releases/latest';
+// Fallback when GitHub's API can't be reached. Asset names embed the version,
+// so the real one is read from the latest release below and every link updated.
+const FALLBACK_VERSION = '0.3.0';
 
 const PRIMARY = {
   win: {
-    x64:   { file: `Zen.Host-${VERSION}-win-x64.exe`,   label: 'Download for Windows', meta: '64-bit installer · Windows 10/11' },
-    arm64: { file: `Zen.Host-${VERSION}-win-arm64.exe`, label: 'Download for Windows', meta: 'ARM64 installer · Windows 10/11' },
+    x64:   { file: 'win-x64.exe',   label: 'Download for Windows', meta: '64-bit installer · Windows 10/11' },
+    arm64: { file: 'win-arm64.exe', label: 'Download for Windows', meta: 'ARM64 installer · Windows 10/11' },
   },
   mac: {
-    arm64: { file: `Zen.Host-${VERSION}-mac-arm64.dmg`, label: 'Download for macOS', meta: 'Apple Silicon · macOS 11+' },
-    x64:   { file: `Zen.Host-${VERSION}-mac-x64.dmg`,   label: 'Download for macOS', meta: 'Intel · macOS 11+' },
+    arm64: { file: 'mac-arm64.dmg', label: 'Download for macOS', meta: 'Apple Silicon · macOS 13+' },
+    x64:   { file: 'mac-x64.dmg',   label: 'Download for macOS', meta: 'Intel · macOS 13+' },
   },
   linux: {
-    x64:   { file: `Zen.Host-${VERSION}-linux-x86_64.AppImage`, label: 'Download for Linux', meta: 'AppImage · x86_64' },
-    arm64: { file: `Zen.Host-${VERSION}-linux-arm64.AppImage`,  label: 'Download for Linux', meta: 'AppImage · ARM64' },
+    x64:   { file: 'linux-x86_64.AppImage', label: 'Download for Linux', meta: 'AppImage · x86_64' },
+    arm64: { file: 'linux-arm64.AppImage',  label: 'Download for Linux', meta: 'AppImage · ARM64' },
   },
 };
+const assetName = (version, suffix) => `Zen.Host-${version}-${suffix}`;
+
+async function latestVersion() {
+  try {
+    const res = await fetch(LATEST_RELEASE_API, { headers: { Accept: 'application/vnd.github+json' } });
+    if (!res.ok) return FALLBACK_VERSION;
+    const tag = String((await res.json()).tag_name || '').replace(/^v/i, '');
+    return /^\d+(\.\d+)*$/.test(tag) ? tag : FALLBACK_VERSION;
+  } catch {
+    return FALLBACK_VERSION;
+  }
+}
+
+// Rewrite the per-file links in the download cards to the latest version.
+function retargetDownloadLinks(version) {
+  document.querySelectorAll(`a[href^="${RELEASE_BASE}"]`).forEach((a) => {
+    a.href = a.href.replace(/\/Zen\.Host-[^/-]+-/, `/Zen.Host-${version}-`);
+  });
+}
 
 async function detectPlatform() {
   const ua = navigator.userAgent || '';
@@ -162,14 +184,15 @@ async function detectPlatform() {
   return { os, arch };
 }
 
-detectPlatform().then(({ os, arch }) => {
+Promise.all([detectPlatform(), latestVersion()]).then(([{ os, arch }, version]) => {
+  retargetDownloadLinks(version);
   if (!os || !PRIMARY[os]) return;   // unknown platform keeps the neutral CTA
   const pick = PRIMARY[os][arch] || PRIMARY[os].x64;
   const btn = document.getElementById('dlPrimaryBtn');
   const title = document.getElementById('dlPrimaryTitle');
   const meta = document.getElementById('dlPrimaryMeta');
   if (btn) {
-    btn.href = RELEASE_BASE + encodeURIComponent(pick.file);
+    btn.href = RELEASE_BASE + encodeURIComponent(assetName(version, pick.file));
     btn.textContent = `↓ ${pick.label}`;
   }
   if (title) title.textContent = pick.label;

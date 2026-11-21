@@ -108,7 +108,22 @@ body {
 .empty-state h1 { font-size: 25px; margin: 12px 0 8px; }
 .empty-state p { color: var(--muted); margin-bottom: 22px; }
 
-#serverView { display: flex; flex-direction: column; height: 100%; }
+#serverView { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+
+/* "Out of date" warning */
+.outdated-banner {
+  display: flex; align-items: center; gap: 14px; flex-shrink: 0;
+  margin: 14px 26px 0; padding: 12px 14px 12px 16px; border-radius: 13px;
+  background: rgba(255,193,94,0.1); border: 1px solid rgba(255,193,94,0.45); color: #f0d59c;
+  font-size: 13px;
+}
+.ob-icon { font-size: 20px; }
+.ob-text { flex: 1; min-width: 0; }
+.ob-text #obMessage { font-weight: 600; color: #ffe2a8; overflow-wrap: anywhere; }
+.ob-detail { font-size: 12px; color: #c9b27f; margin-top: 3px; }
+.ob-detail:empty { display: none; }
+.outdated-banner .btn { flex-shrink: 0; }
+.app-version { margin-top: auto; font-size: 11px; color: var(--muted); opacity: .7; }
 .server-header {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 26px; border-bottom: 1px solid var(--glass-border);
@@ -289,7 +304,12 @@ body {
 
 /* Modal */
 .modal-backdrop { position: fixed; inset: 0; background: rgba(4,6,12,0.6); backdrop-filter: blur(6px); display: grid; place-items: center; z-index: 50; }
-.modal { padding: 28px; width: 500px; max-width: 92vw; }
+.modal { padding: 28px; width: 500px; max-width: 92vw; max-height: 92vh; overflow-y: auto; }
+.type-cards.cols-2 { grid-template-columns: repeat(2, 1fr); }
+.world-pick { margin-top: 10px; display: flex; flex-direction: column; gap: 10px; }
+.world-drop { border: 1px dashed var(--glass-border); border-radius: 12px; padding: 16px; text-align: center; font-size: 13px; display: flex; flex-direction: column; gap: 4px; transition: .15s; }
+.world-drop.drag { border-color: var(--accent-2); background: rgba(79,195,255,0.1); box-shadow: 0 0 24px rgba(79,195,255,0.22); }
+.replace-world { margin-bottom: 16px; }
 .modal h2 { margin: 0 0 18px; }
 .field { display: block; margin-bottom: 16px; }
 .field > span { display: block; font-size: 13px; color: var(--muted); margin-bottom: 7px; }

@@ -101,17 +101,17 @@ sudo apt install ./"Zen Host-0.1.0-linux-amd64.deb"</span>
       <section class="docs-section" id="java">
         <h2>Installing Java</h2>
         <p class="docs-lead">Zen Host bundles everything it needs to run itself, but a Minecraft server is a Java program — so a JDK has to be installed separately.</p>
-        <p>Install <strong>Java 21</strong>. Minecraft 1.20.5 and newer require it, and it runs older versions fine.</p>
+        <p>Install <strong>Java 25</strong>. Minecraft 26.1 and newer require it. Older servers need an older Java (1.20.5 – 1.21.11 use Java 21, 1.18 – 1.20.4 use Java 17) — if you have several installed, Zen Host picks the right one for each server automatically.</p>
 
         <div class="table-wrap">
           <table>
             <thead><tr><th>Platform</th><th>Command / source</th></tr></thead>
             <tbody>
               <tr><td>Windows</td><td><a href="https://adoptium.net" target="_blank" rel="noopener">adoptium.net</a> installer</td></tr>
-              <tr><td>macOS</td><td><code>brew install --cask temurin</code></td></tr>
-              <tr><td>Debian / Ubuntu</td><td><code>sudo apt install openjdk-21-jre-headless</code></td></tr>
-              <tr><td>Fedora</td><td><code>sudo dnf install java-21-openjdk-headless</code></td></tr>
-              <tr><td>Arch</td><td><code>sudo pacman -S jre21-openjdk-headless</code></td></tr>
+              <tr><td>macOS</td><td><code>brew install --cask temurin@25</code></td></tr>
+              <tr><td>Debian / Ubuntu</td><td><code>sudo apt install openjdk-25-jre-headless</code></td></tr>
+              <tr><td>Fedora</td><td><code>sudo dnf install java-25-openjdk-headless</code></td></tr>
+              <tr><td>Arch</td><td><code>sudo pacman -S jre-openjdk-headless</code></td></tr>
             </tbody>
           </table>
         </div>

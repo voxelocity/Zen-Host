@@ -12,8 +12,44 @@ const state = {
 
 async function call(channel, payload) {
   const res = await api.invoke(channel, payload);
-  if (!res.ok) throw new Error(res.error);
+  if (!res.ok) {
+    // The main process flags errors that mean an outside service changed in a
+    // way this build doesn't understand — i.e. Zen Host probably needs updating.
+    if (res.outdated) showOutdated(res.error);
+    const err = new Error(res.error);
+    err.outdated = !!res.outdated;
+    throw err;
+  }
   return res.data;
+}
+
+// ---------------------------------------------------------------- out-of-date warning
+
+const update = {
+  message: 'This version of Zen Host is most likely out of date. Download the latest version at: https://voxelocity.github.io/Zen-Host/',
+  dismissed: false,
+};
+
+function showOutdated(detail) {
+  if (update.dismissed) return;
+  $('#obMessage').textContent = update.message;
+  $('#obDetail').textContent = detail || '';
+  $('#outdatedBanner').classList.remove('hidden');
+}
+
+$('#obDownloadBtn').onclick = () => call('app:openDownloadPage');
+$('#obCloseBtn').onclick = () => {
+  update.dismissed = true;
+  $('#outdatedBanner').classList.add('hidden');
+};
+
+async function checkForUpdate() {
+  try {
+    const status = await call('app:updateStatus');
+    update.message = status.message;
+    $('#appVersion').textContent = `Zen Host v${status.current}`;
+    if (status.outdated) showOutdated(`Zen Host v${status.latest} is available — you have v${status.current}.`);
+  } catch { /* the check is best-effort */ }
 }
 
 function toast(msg) {
@@ -295,10 +331,13 @@ const WORLD_TOGGLES = [
 async function loadWorld() {
   const s = currentServer();
   if (!s) return;
-  const { props } = await call('props:read', s.id);
+  const { props, unsupported = [] } = await call('props:read', s.id);
+  if (!/^✓/.test($('#replaceNotice').textContent)) $('#replaceNotice').classList.add('hidden');
   const form = $('#worldForm');
   form._props = props;
   form._values = { ...props };
+  // e.g. "Spawn Animals" no longer exists as a setting on Minecraft 1.21.2+.
+  const toggles = WORLD_TOGGLES.filter(([k]) => !unsupported.includes(k));
 
   const card = (block) => `<div class="world-block glass">${block}</div>`;
   form.innerHTML = `
@@ -317,7 +356,7 @@ async function loadWorld() {
       </div>`)}
     ${card(`<div class="world-section-title">Rules</div>
       <div class="world-toggles" id="worldToggles">${
-        WORLD_TOGGLES.map(([k, n, d]) => toggleRow(k, n, d, props[k] === 'true')).join('')}</div>`)}
+        toggles.map(([k, n, d]) => toggleRow(k, n, d, props[k] === 'true')).join('')}</div>`)}
     ${card(`<div class="world-section-title">Players & View</div>
       <div class="world-row2">
         <label class="world-field"><span>Server message (MOTD)</span>
@@ -367,6 +406,50 @@ $('#saveWorldBtn').onclick = async () => {
   loadOverview();
   toast('World settings saved');
 };
+
+// Replace this server's world with an existing save.
+async function replaceWorld(src) {
+  const s = currentServer();
+  if (!s || !src) return;
+  const box = $('#replaceNotice');
+  const show = (cls, html) => { box.className = 'notice' + (cls ? ' ' + cls : ''); box.innerHTML = html; };
+  if (s.status !== 'stopped') { show('warn', 'Stop the server before replacing its world.'); return; }
+  let info;
+  try {
+    show('', 'Reading world…');
+    info = await call('world:inspect', src);
+  } catch (e) { show('error', escapeHtml(e.message)); return; }
+
+  const from = info.version ? ` (Minecraft ${info.version})` : '';
+  const older = info.version && compareVersions(info.version, s.version) > 0
+    ? `\n\nWarning: this world was played on a newer version than the server (${s.version}), so it may not load.` : '';
+  if (!confirm(`Replace this server's world with "${info.name}"${from}?\n\nThe current world will be moved to world-backups.${older}`)) {
+    box.classList.add('hidden');
+    return;
+  }
+  try {
+    show('', 'Copying world… 0%');
+    const res = await call('world:replace', { id: s.id, src });
+    show('', `✓ Now using <strong>${escapeHtml(res.name)}</strong>.` +
+      (res.backup ? ` The old world is in <code>${escapeHtml(res.backup)}</code>.` : ''));
+    loadWorld(); loadProperties(); loadOverview();
+  } catch (e) { show('error', escapeHtml(e.message)); }
+}
+$('#replaceWorldFolder').onclick = async () => replaceWorld(await call('dialog:pickWorld', 'folder'));
+$('#replaceWorldZip').onclick = async () => replaceWorld(await call('dialog:pickWorld', 'zip'));
+wireWorldDrop($('#replaceDrop'), replaceWorld);
+
+// 1 if a is newer than b, -1 if older, 0 if equal or not comparable.
+function compareVersions(a, b) {
+  const pa = String(a).split(/[.\-]/).map(Number);
+  const pb = String(b).split(/[.\-]/).map(Number);
+  if (pa.some(isNaN) || pb.some(isNaN)) return 0;
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const d = (pa[i] || 0) - (pb[i] || 0);
+    if (d) return d > 0 ? 1 : -1;
+  }
+  return 0;
+}
 
 // ---------------------------------------------------------------- OPERATORS
 
@@ -678,11 +761,75 @@ $$('#typeCards .type-card').forEach((card) => {
   };
 });
 
+// World source: generate a new world, or bring in an existing save.
+const newWorld = { mode: 'new', info: null };
+
+$$('#worldSourceCards .type-card').forEach((card) => {
+  card.onclick = () => setWorldMode(card.dataset.src);
+});
+function setWorldMode(mode) {
+  newWorld.mode = mode;
+  $$('#worldSourceCards .type-card').forEach((c) => c.classList.toggle('selected', c.dataset.src === mode));
+  $('#worldPick').classList.toggle('hidden', mode !== 'existing');
+}
+function resetNewWorld() {
+  newWorld.info = null;
+  setWorldMode('new');
+  $('#worldInfo').classList.add('hidden');
+  $('#m_name').placeholder = 'My Awesome Server';
+}
+
+// Point the version picker at the version the world was last played on.
+function matchWorldVersion() {
+  const info = newWorld.info;
+  if (!info || !info.version) return;
+  const sel = $('#m_version');
+  const has = Array.from(sel.options).some((o) => o.value === info.version);
+  if (has) sel.value = info.version;
+  const box = $('#worldInfo');
+  box.className = 'notice';
+  box.innerHTML = `✓ <strong>${escapeHtml(info.name)}</strong> — last played on Minecraft ${escapeHtml(info.version)}. ` +
+    (has ? 'Version set to match.'
+      : `Pick ${escapeHtml(info.version)} or newer; older versions can't open it.`);
+}
+
+async function chooseNewWorld(src) {
+  if (!src) return;
+  const box = $('#worldInfo');
+  box.className = 'notice';
+  box.textContent = 'Reading world…';
+  try {
+    newWorld.info = await call('world:inspect', src);
+    $('#m_name').placeholder = newWorld.info.name;
+    box.innerHTML = `✓ <strong>${escapeHtml(newWorld.info.name)}</strong>`;
+    matchWorldVersion();
+  } catch (e) {
+    newWorld.info = null;
+    box.className = 'notice error';
+    box.textContent = e.message;
+  }
+}
+$('#pickWorldFolder').onclick = async () => chooseNewWorld(await call('dialog:pickWorld', 'folder'));
+$('#pickWorldZip').onclick = async () => chooseNewWorld(await call('dialog:pickWorld', 'zip'));
+wireWorldDrop($('#worldDrop'), chooseNewWorld);
+
+// Drag-and-drop for a world folder or .zip.
+function wireWorldDrop(el, onPath) {
+  ['dragenter', 'dragover'].forEach((ev) => el.addEventListener(ev, (e) => { e.preventDefault(); el.classList.add('drag'); }));
+  ['dragleave', 'drop'].forEach((ev) => el.addEventListener(ev, (e) => { e.preventDefault(); el.classList.remove('drag'); }));
+  el.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files[0];
+    const p = file && api.pathForFile(file);
+    if (p) onPath(p);
+  });
+}
+
 async function openModal() {
   $('#m_name').value = '';
   $('#createProgress').classList.add('hidden');
   $('#progressFill').style.width = '0%';
   $('#m_create').disabled = false;
+  resetNewWorld();
   modal.classList.remove('hidden');
   await loadVersions();
 }
@@ -698,20 +845,29 @@ async function loadVersions() {
       o.value = v; o.textContent = v;
       sel.appendChild(o);
     }
+    matchWorldVersion();
   } catch (e) {
     sel.innerHTML = `<option>Failed to load (${escapeHtml(e.message)})</option>`;
   }
 }
 $('#m_create').onclick = async () => {
-  const name = $('#m_name').value.trim() || 'New Server';
+  const existing = newWorld.mode === 'existing';
+  const name = $('#m_name').value.trim() || (existing && newWorld.info ? newWorld.info.name : 'New Server');
   const version = $('#m_version').value;
   const memoryMB = Number($('#m_memory').value);
   if (!version || version.startsWith('Loading') || version.startsWith('Failed')) return;
+  if (existing && !newWorld.info) {
+    const box = $('#worldInfo');
+    box.className = 'notice error';
+    box.textContent = 'Choose a world folder or .zip first.';
+    return;
+  }
+  const worldPath = existing ? newWorld.info.source : undefined;
   $('#m_create').disabled = true;
   $('#createProgress').classList.remove('hidden');
   $('#progressText').textContent = 'Resolving download…';
   try {
-    const server = await call('servers:create', { name, type: selectedType, version, memoryMB });
+    const server = await call('servers:create', { name, type: selectedType, version, memoryMB, worldPath });
     modal.classList.add('hidden');
     await refreshServers();
     selectServer(server.id);
@@ -744,6 +900,11 @@ api.on(({ channel, payload }) => {
     if (payload.cancelled) { $('#pregenText').textContent = 'Cancelled.'; resetPregenUI(); }
     else if (payload.done) { $('#pregenFill').style.width = '100%'; $('#pregenText').textContent = '✓ Pre-generation complete.'; resetPregenUI(); }
     else if (payload.line) $('#pregenText').textContent = payload.line.slice(0, 90);
+  } else if (channel === 'world-import') {
+    const box = $('#replaceNotice');
+    if (payload.id === state.selectedId && /Copying world/.test(box.textContent)) {
+      box.textContent = `Copying world… ${payload.percent}%`;
+    }
   } else if (channel === 'download-progress') {
     if (payload.phase === 'downloading') {
       $('#progressFill').style.width = payload.percent + '%';
@@ -753,6 +914,9 @@ api.on(({ channel, payload }) => {
     } else if (payload.phase === 'installing') {
       $('#progressFill').style.width = '100%';
       $('#progressText').textContent = `Installing mod loader… ${payload.line ? '— ' + payload.line.slice(0, 60) : '(this can take a minute)'}`;
+    } else if (payload.phase === 'world') {
+      $('#progressFill').style.width = payload.percent + '%';
+      $('#progressText').textContent = `Copying world… ${payload.percent}%`;
     } else if (payload.phase === 'done') {
       $('#progressFill').style.width = '100%';
       $('#progressText').textContent = 'Setting up server files…';
@@ -773,3 +937,4 @@ function formatSize(bytes) {
 }
 
 refreshServers();
+checkForUpdate();

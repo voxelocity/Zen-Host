@@ -4,6 +4,8 @@
 // an intuitive editor (toggles, dropdowns, numbers) instead of raw text.
 // Any key not listed here still shows up as a plain text field.
 
+const { compareVersions } = require('./versions');
+
 const PROPERTY_META = {
   motd: { label: 'Server Message (MOTD)', type: 'string', group: 'General' },
   'max-players': { label: 'Max Players', type: 'int', min: 1, max: 1000, group: 'General' },
@@ -53,6 +55,56 @@ const DEFAULT_PROPERTIES = {
   'white-list': 'false',
 };
 
+// ---- settings Mojang moved out of server.properties ----------------------
+//
+// 1.21.2 dropped spawn-animals and spawn-npcs outright. 1.21.9 turned pvp,
+// spawn-monsters, allow-nether and enable-command-block into per-world game
+// rules, and 1.21.11 renamed those rules to snake_case. Zen Host keeps showing
+// them as the same toggles and sets the game rule behind the scenes.
+
+const REMOVED_IN_1_21_2 = ['spawn-animals', 'spawn-npcs'];
+
+// setting key -> [game rule in 1.21.9–1.21.10, game rule in 1.21.11+]
+const MOVED_TO_GAMERULES = {
+  pvp: ['pvp', 'pvp'],
+  'spawn-monsters': ['spawnMonsters', 'spawn_monsters'],
+  'allow-nether': ['allowEnteringNetherUsingPortals', 'allow_entering_nether_using_portals'],
+  'enable-command-block': ['commandBlocksEnabled', 'command_blocks_work'],
+};
+
+// Vanilla's value for each moved rule in a brand-new world.
+const GAMERULE_DEFAULTS = {
+  pvp: true,
+  'spawn-monsters': true,
+  'allow-nether': true,
+  'enable-command-block': true,
+};
+
+// Keys that do nothing in server.properties on this Minecraft version.
+function removedProperties(mcVersion) {
+  const removed = [];
+  if (compareVersions(mcVersion, '1.21.2') >= 0) removed.push(...REMOVED_IN_1_21_2);
+  if (gameruleNames(mcVersion)) removed.push(...Object.keys(MOVED_TO_GAMERULES));
+  return removed;
+}
+
+// { 'spawn-monsters': 'spawn_monsters', … } when this version uses game rules
+// for those settings, otherwise null.
+function gameruleNames(mcVersion) {
+  if (compareVersions(mcVersion, '1.21.9') < 0) return null;
+  const idx = compareVersions(mcVersion, '1.21.11') < 0 ? 0 : 1;
+  const out = {};
+  for (const [key, names] of Object.entries(MOVED_TO_GAMERULES)) out[key] = names[idx];
+  return out;
+}
+
+// The starting server.properties for a new server on this version.
+function defaultPropertiesFor(mcVersion) {
+  const props = { ...DEFAULT_PROPERTIES };
+  for (const key of removedProperties(mcVersion)) delete props[key];
+  return props;
+}
+
 function parseProperties(text) {
   const props = {};
   for (const raw of text.split(/\r?\n/)) {
@@ -73,4 +125,7 @@ function stringifyProperties(props) {
   return lines.join('\n') + '\n';
 }
 
-module.exports = { PROPERTY_META, DEFAULT_PROPERTIES, parseProperties, stringifyProperties };
+module.exports = {
+  PROPERTY_META, DEFAULT_PROPERTIES, GAMERULE_DEFAULTS,
+  parseProperties, stringifyProperties, removedProperties, gameruleNames, defaultPropertiesFor,
+};

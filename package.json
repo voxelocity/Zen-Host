@@ -1,6 +1,6 @@
 {
   "name": "zen-host",
-  "version": "0.1.0",
+  "version": "0.3.0",
   "description": "Zen Host — visually create, host, and manage your own Minecraft Java servers with drag-and-drop mods.",
   "main": "main.js",
   "author": {
@@ -22,8 +22,8 @@
     "dist:linux": "electron-builder --linux --x64 --arm64"
   },
   "devDependencies": {
-    "electron": "^33.2.0",
-    "electron-builder": "^25.1.8"
+    "electron": "^44.7.0",
+    "electron-builder": "^26.15.3"
   },
   "build": {
     "appId": "com.shark.zenhost",

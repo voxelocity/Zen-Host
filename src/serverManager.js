@@ -10,7 +10,9 @@ const downloads = require('./downloads');
 const { resolvePlayer } = require('./players');
 const { Tunnel } = require('./tunnel');
 const modrinth = require('./modrinth');
-const { javaBin, installHint } = require('./java');
+const { inspectWorld, importWorld } = require('./worldImport');
+const { javaFor, installHint } = require('./java');
+const { mcVersionOf, estimateJavaMajor } = require('./versions');
 
 // Server-side far-render mods + the chunk pre-generator, fetched from Modrinth.
 const FAR_MODS = [
@@ -20,7 +22,8 @@ const FAR_MODS = [
 ];
 const LOADER_OF = { fabric: 'fabric', forge: 'forge', neoforge: 'neoforge' };
 const {
-  PROPERTY_META, DEFAULT_PROPERTIES, parseProperties, stringifyProperties,
+  PROPERTY_META, DEFAULT_PROPERTIES, GAMERULE_DEFAULTS, parseProperties, stringifyProperties,
+  removedProperties, gameruleNames, defaultPropertiesFor,
 } = require('./properties');
 
 // Server types that load .jar mods from a mods/ folder.
@@ -47,6 +50,7 @@ class ServerManager {
     this.tunnels = {};                      // id -> Tunnel
     this.tunnelState = {};                  // id -> { status, address }
     this.pregen = {};                       // id -> { active } while Chunky runs
+    this.starting = new Set();              // ids between Start click and java spawn
     this.emit = () => {};                   // set by main: (channel, payload)
     fs.mkdirSync(rootDir, { recursive: true });
     this._load();
@@ -86,7 +90,7 @@ class ServerManager {
 
   // ---- creation --------------------------------------------------------
 
-  async create({ name, type, version, memoryMB }) {
+  async create({ name, type, version, memoryMB, worldPath }) {
     const id = randomUUID().slice(0, 8);
     const meta = {
       id,
@@ -104,25 +108,54 @@ class ServerManager {
     fs.mkdirSync(serverDir, { recursive: true });
     if (MOD_TYPES.has(type)) fs.mkdirSync(path.join(serverDir, 'mods'), { recursive: true });
 
-    if (type === 'forge' || type === 'neoforge') {
-      // These ship an installer that generates the server files locally.
-      await this._installModLoader(id, meta, type, version);
-    } else {
-      // Direct server jar download with progress reporting.
+    try {
       this.emit('download-progress', { id, phase: 'resolving', percent: 0 });
-      const url = await downloads.resolveServerUrl(type, version);
-      const jarPath = path.join(serverDir, 'server.jar');
-      await downloads.downloadToFile(url, jarPath, ({ received, total }) => {
-        const percent = total ? Math.round((received / total) * 100) : 0;
-        this.emit('download-progress', { id, phase: 'downloading', percent, received, total });
-      });
-      this.emit('download-progress', { id, phase: 'done', percent: 100 });
+      meta.javaMajor = await downloads.requiredJava(version);
+
+      if (type === 'forge' || type === 'neoforge') {
+        // These ship an installer that generates the server files locally.
+        await this._installModLoader(id, meta, type, version);
+      } else {
+        // Direct server jar download with progress reporting.
+        const url = await downloads.resolveServerUrl(type, version);
+        const jarPath = path.join(serverDir, 'server.jar');
+        await downloads.downloadToFile(url, jarPath, ({ received, total }) => {
+          const percent = total ? Math.round((received / total) * 100) : 0;
+          this.emit('download-progress', { id, phase: 'downloading', percent, received, total });
+        });
+        this.emit('download-progress', { id, phase: 'done', percent: 100 });
+      }
+    } catch (err) {
+      // Don't leave a half-built server folder behind.
+      try { fs.rmSync(serverDir, { recursive: true, force: true }); } catch {}
+      throw err;
     }
 
     // Seed a default server.properties.
     const propsPath = path.join(serverDir, 'server.properties');
     if (!fs.existsSync(propsPath)) {
-      fs.writeFileSync(propsPath, stringifyProperties({ ...DEFAULT_PROPERTIES, motd: meta.name }));
+      fs.writeFileSync(propsPath, stringifyProperties({ ...defaultPropertiesFor(version), motd: meta.name }));
+    }
+
+    // Bring in an existing world instead of generating a new one.
+    if (worldPath) {
+      try {
+        await this._importWorld(id, worldPath);
+      } catch (err) {
+        try { fs.rmSync(serverDir, { recursive: true, force: true }); } catch {}
+        throw err;
+      }
+      meta.importedWorld = true;
+    }
+
+    // On versions where some settings are game rules, apply Zen Host's defaults
+    // for them once the world exists (on first start). An imported world keeps
+    // its own rules; they're read back from it on first start instead.
+    const rules = gameruleNames(version);
+    if (rules) {
+      meta.gamerules = {};
+      for (const key of Object.keys(rules)) meta.gamerules[key] = DEFAULT_PROPERTIES[key] === 'true';
+      meta.pendingGamerules = worldPath ? {} : { ...meta.gamerules };
     }
 
     this.servers[id] = meta;
@@ -134,7 +167,8 @@ class ServerManager {
   // figure out how the resulting server is launched (args file vs. a plain jar).
   async _installModLoader(id, meta, type, version) {
     const serverDir = this.dir(id);
-    this.emit('download-progress', { id, phase: 'resolving', percent: 0 });
+    // Check for a suitable Java before downloading anything — the installer needs it.
+    const java = await javaFor(meta.javaMajor, version);
     const url = await downloads.resolveServerUrl(type, version);
     const installerPath = path.join(serverDir, 'installer.jar');
     await downloads.downloadToFile(url, installerPath, ({ received, total }) => {
@@ -145,7 +179,7 @@ class ServerManager {
     this.emit('download-progress', { id, phase: 'installing', line: `Running ${type} installer…` });
     const flag = type === 'neoforge' ? '--install-server' : '--installServer';
     await new Promise((resolve, reject) => {
-      const proc = spawn(javaBin(), ['-jar', 'installer.jar', flag], { cwd: serverDir });
+      const proc = spawn(java, ['-jar', 'installer.jar', flag], { cwd: serverDir });
       const tail = [];
       const onData = (b) => {
         for (const ln of b.toString().split(/\r?\n/)) {
@@ -202,6 +236,82 @@ class ServerManager {
     return found ? path.relative(serverDir, found).split(path.sep).join('/') : null;
   }
 
+  // ---- existing worlds -------------------------------------------------
+
+  inspectWorld(src) { return inspectWorld(src); }
+
+  _levelName(id) {
+    let props = {};
+    try { props = parseProperties(fs.readFileSync(path.join(this.dir(id), 'server.properties'), 'utf8')); } catch {}
+    const name = String(props['level-name'] || 'world').trim() || 'world';
+    // level-name is a folder inside the server; never let it point elsewhere.
+    if (path.isAbsolute(name) || name.split(/[\\/]/).includes('..')) return 'world';
+    return name;
+  }
+
+  // Copy/extract a world into the server's world folder, then carry its
+  // difficulty, game mode and hardcore flag into server.properties (the server
+  // would otherwise override them with its own defaults).
+  async _importWorld(id, src) {
+    const info = await inspectWorld(src);
+    const dest = path.join(this.dir(id), this._levelName(id));
+    await importWorld(src, dest, (percent) => {
+      this.emit('download-progress', { id, phase: 'world', percent });
+      this.emit('world-import', { id, percent });
+    });
+
+    const file = path.join(this.dir(id), 'server.properties');
+    let props = {};
+    try { props = parseProperties(fs.readFileSync(file, 'utf8')); } catch {}
+    if (info.difficulty) props.difficulty = info.difficulty;
+    if (info.gamemode) props.gamemode = info.gamemode;
+    if (info.hardcore != null) props.hardcore = String(info.hardcore);
+    fs.writeFileSync(file, stringifyProperties(props));
+    return info;
+  }
+
+  // Swap an existing server's world for another one. The old world (including
+  // Paper's separate nether/end folders) is moved to world-backups/, not deleted.
+  async replaceWorld(id, src) {
+    const meta = this.servers[id];
+    if (!meta) throw new Error('Server not found');
+    if (this.running[id] || this.starting.has(id)) throw new Error('Stop the server before replacing its world.');
+    const serverDir = this.dir(id);
+    const level = this._levelName(id);
+
+    // Validate before touching anything.
+    await inspectWorld(src);
+
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19);
+    const backupDir = path.join(serverDir, 'world-backups', stamp);
+    const moved = [];
+    for (const folder of [level, `${level}_nether`, `${level}_the_end`]) {
+      const from = path.join(serverDir, folder);
+      if (!fs.existsSync(from)) continue;
+      fs.mkdirSync(backupDir, { recursive: true });
+      fs.renameSync(from, path.join(backupDir, folder));
+      moved.push(folder);
+    }
+
+    let info;
+    try {
+      info = await this._importWorld(id, src);
+    } catch (err) {
+      // Put the old world back.
+      for (const folder of moved) {
+        try { fs.renameSync(path.join(backupDir, folder), path.join(serverDir, folder)); } catch {}
+      }
+      try { fs.rmSync(backupDir, { recursive: true, force: true }); } catch {}
+      throw err;
+    }
+
+    meta.importedWorld = true;
+    // Read the new world's game rules back on next start rather than forcing ours.
+    if (meta.pendingGamerules) meta.pendingGamerules = {};
+    this._save();
+    return { ...info, backup: moved.length ? path.relative(serverDir, backupDir).split(path.sep).join('/') : null };
+  }
+
   async delete(id) {
     if (this.running[id]) await this.stop(id, true);
     const serverDir = this.dir(id);
@@ -228,16 +338,95 @@ class ServerManager {
 
   // ---- properties ------------------------------------------------------
 
+  // server.properties as the UI sees it. On versions where pvp, spawn-monsters,
+  // allow-nether and enable-command-block are game rules, their current values
+  // are filled in from the world so they still appear as ordinary settings.
+  // `unsupported` lists settings this Minecraft version no longer has.
   readProperties(id) {
     const file = path.join(this.dir(id), 'server.properties');
     let props = {};
     try { props = parseProperties(fs.readFileSync(file, 'utf8')); } catch {}
-    return { props, meta: PROPERTY_META };
+
+    const mc = mcVersionOf(this.servers[id]);
+    const rules = mc ? gameruleNames(mc) : null;
+    const removed = mc ? removedProperties(mc) : [];
+    for (const key of removed) delete props[key];
+    if (rules) {
+      const values = this._gamerules(id);
+      for (const key of Object.keys(rules)) props[key] = String(values[key]);
+    }
+    const unsupported = removed.filter((key) => !(rules && key in rules));
+    const meta = { ...PROPERTY_META };
+    for (const key of unsupported) delete meta[key];
+    return { props, meta, unsupported };
   }
 
   writeProperties(id, props) {
     const file = path.join(this.dir(id), 'server.properties');
+    const meta = this.servers[id];
+    const mc = mcVersionOf(meta);
+    const rules = mc ? gameruleNames(mc) : null;
+    props = { ...props };
+
+    if (rules && meta) {
+      const current = this._gamerules(id);
+      let changed = false;
+      for (const [key, rule] of Object.entries(rules)) {
+        if (!(key in props)) continue;
+        const want = String(props[key]) === 'true';
+        if (want === current[key]) continue;
+        meta.gamerules = { ...meta.gamerules, [key]: want };
+        // Stays pending until the server confirms it; applied on next start if stopped.
+        meta.pendingGamerules = { ...meta.pendingGamerules, [key]: want };
+        if (this.running[id] && this.running[id].status === 'running') {
+          this.sendCommand(id, `gamerule ${rule} ${want}`);
+        }
+        changed = true;
+      }
+      if (changed) this._save();
+    }
+    if (mc) for (const key of removedProperties(mc)) delete props[key];
     fs.writeFileSync(file, stringifyProperties(props));
+  }
+
+  // ---- game rules (settings Mojang moved out of server.properties) -----
+
+  // Last known value of each moved setting, falling back to vanilla defaults.
+  _gamerules(id) {
+    const saved = (this.servers[id] && this.servers[id].gamerules) || {};
+    return { ...GAMERULE_DEFAULTS, ...saved };
+  }
+
+  // Once the server is up: apply changes saved while it was stopped, and read
+  // back the rest so the World tab reflects the world's real values.
+  _syncGamerules(id) {
+    const meta = this.servers[id];
+    const rules = meta && gameruleNames(mcVersionOf(meta));
+    if (!rules) return;
+    const pending = meta.pendingGamerules || {};
+    for (const [key, rule] of Object.entries(rules)) {
+      this.sendCommand(id, key in pending ? `gamerule ${rule} ${pending[key]}` : `gamerule ${rule}`);
+    }
+  }
+
+  // Picks up console replies such as "Game rule pvp is currently set to true"
+  // (26.x) or "Gamerule pvp is now set to: false" (1.21.x).
+  _trackGamerules(id, text) {
+    const meta = this.servers[id];
+    const rules = meta && gameruleNames(mcVersionOf(meta));
+    if (!rules || !/game ?rule/i.test(text)) return;
+    const keyOf = Object.fromEntries(Object.entries(rules).map(([key, rule]) => [rule, key]));
+    const re = /Game ?rule (?:minecraft:)?(\w+) is (?:currently|now|already) set to:? (true|false)/gi;
+    let m;
+    let changed = false;
+    while ((m = re.exec(text))) {
+      const key = keyOf[m[1]];
+      if (!key) continue;
+      meta.gamerules = { ...meta.gamerules, [key]: m[2].toLowerCase() === 'true' };
+      if (meta.pendingGamerules) delete meta.pendingGamerules[key];
+      changed = true;
+    }
+    if (changed) this._save();
   }
 
   // ---- connection info -------------------------------------------------
@@ -318,6 +507,7 @@ class ServerManager {
     if (!loader) throw new Error('Far render needs a Fabric, Forge or NeoForge server.');
     const modsDir = path.join(this.dir(id), 'mods');
     fs.mkdirSync(modsDir, { recursive: true });
+    const mc = mcVersionOf(meta);
 
     const results = [];
     for (const mod of FAR_MODS) {
@@ -326,9 +516,9 @@ class ServerManager {
         continue;
       }
       try {
-        const v = await modrinth.getModVersion(mod.slug, meta.version, loader);
+        const v = await modrinth.getModVersion(mod.slug, mc, loader);
         if (!v) {
-          results.push({ slug: mod.slug, name: mod.name, ok: false, error: `No build for Minecraft ${meta.version} yet.` });
+          results.push({ slug: mod.slug, name: mod.name, ok: false, error: `No build for Minecraft ${mc} yet.` });
           continue;
         }
         await downloads.downloadToFile(v.url, path.join(modsDir, v.filename));
@@ -432,11 +622,20 @@ class ServerManager {
 
   // ---- process lifecycle ----------------------------------------------
 
-  start(id) {
+  async start(id) {
     const meta = this.servers[id];
     if (!meta) throw new Error('Server not found');
-    if (this.running[id]) return; // already running
+    if (this.running[id] || this.starting.has(id)) return; // already running
     if (!meta.eulaAccepted) throw new Error('EULA not accepted');
+
+    let java;
+    this.starting.add(id);
+    try {
+      const mc = mcVersionOf(meta);
+      java = await javaFor(meta.javaMajor || estimateJavaMajor(mc), mc);
+    } finally {
+      this.starting.delete(id);
+    }
 
     const serverDir = this.dir(id);
     const xmx = `-Xmx${meta.memoryMB}M`;
@@ -445,7 +644,7 @@ class ServerManager {
       ? [xms, xmx, `@${meta.argsFile}`, 'nogui']                 // modern Forge/NeoForge
       : [xms, xmx, '-jar', meta.jar || 'server.jar', 'nogui'];   // vanilla/paper/fabric/old-forge
 
-    const proc = spawn(javaBin(), args, { cwd: serverDir });
+    const proc = spawn(java, args, { cwd: serverDir });
     this.running[id] = { proc, status: 'starting' };
     this.emit('status', { id, status: 'starting' });
 
@@ -458,7 +657,9 @@ class ServerManager {
       if (/Done \(.*\)! For help/.test(text) && this.running[id]) {
         this.running[id].status = 'running';
         this.emit('status', { id, status: 'running' });
+        this._syncGamerules(id);
       }
+      this._trackGamerules(id, text);
       // Track Chunky pre-generation progress.
       if (this.pregen[id] && /Chunky/i.test(text)) {
         const pm = text.match(/(\d+(?:\.\d+)?)%/);

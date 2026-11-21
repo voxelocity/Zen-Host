@@ -2,15 +2,18 @@
 
 const { app, BrowserWindow, Menu, ipcMain, dialog, shell, clipboard } = require('electron');
 const path = require('path');
+const fs = require('fs');
 const { ServerManager } = require('./src/serverManager');
 const downloads = require('./src/downloads');
-const { findJava, javaVersion, installHint } = require('./src/java');
+const { listJavas, installHint } = require('./src/java');
+const { DOWNLOAD_PAGE, OUTDATED_MESSAGE, checkForUpdate } = require('./src/updates');
 
 const isMac = process.platform === 'darwin';
 
 let win;
 let splash;
 let manager;
+let updateCheck;   // Promise<{ current, latest, outdated }>, started at launch
 
 // A lightweight branded splash shown immediately so the user gets instant feedback
 // while Electron and the main window finish loading.
@@ -54,6 +57,9 @@ function createWindow() {
   // Windows/Linux get a chrome-free window. macOS keeps its application menu —
   // removing it would take Cmd+Q, Cmd+W and clipboard shortcuts with it.
   if (!isMac) win.removeMenu();
+  // The UI is a local page: never let it navigate away or open new windows.
+  win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  win.webContents.on('will-navigate', (e) => e.preventDefault());
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
 
   // Reveal the main window only once it's ready to paint, then drop the splash.
@@ -99,6 +105,7 @@ app.whenReady().then(() => {
   };
 
   if (isMac) buildMacMenu();
+  updateCheck = checkForUpdate(app.getVersion());
   createSplash();
   createWindow();
   app.on('activate', () => {
@@ -133,6 +140,9 @@ const handlers = {
   'servers:acceptEula': (id) => manager.acceptEula(id),
   'servers:openFolder': (id) => shell.openPath(manager.dir(id)),
 
+  'world:inspect': (src) => manager.inspectWorld(src),
+  'world:replace': ({ id, src }) => manager.replaceWorld(id, src),
+
   'props:read': (id) => manager.readProperties(id),
   'props:write': ({ id, props }) => manager.writeProperties(id, props),
 
@@ -156,10 +166,17 @@ const handlers = {
 
   'versions:list': (type) => downloads.listVersions(type),
 
-  'java:check': () => {
-    const bin = findJava();
-    return { found: !!bin, path: bin, version: bin ? javaVersion() : null, hint: installHint() };
+  'java:check': async () => {
+    const javas = await listJavas();
+    return { found: javas.length > 0, javas, hint: installHint() };
   },
+
+  'app:updateStatus': async () => ({
+    ...(await updateCheck),
+    message: OUTDATED_MESSAGE,
+    url: DOWNLOAD_PAGE,
+  }),
+  'app:openDownloadPage': () => shell.openExternal(DOWNLOAD_PAGE),
 
   'dialog:pickMods': async () => {
     const res = await dialog.showOpenDialog(win, {
@@ -169,7 +186,34 @@ const handlers = {
     });
     return res.canceled ? [] : res.filePaths;
   },
+
+  // Pick an existing world: a save folder, or a .zip of one. Opens in the
+  // Minecraft launcher's saves folder when it exists.
+  'dialog:pickWorld': async (kind) => {
+    const saves = minecraftSavesDir();
+    const res = await dialog.showOpenDialog(win, kind === 'zip'
+      ? {
+        title: 'Select a world .zip',
+        defaultPath: saves,
+        filters: [{ name: 'Zipped worlds', extensions: ['zip'] }],
+        properties: ['openFile'],
+      }
+      : {
+        title: 'Select a world folder (the one with level.dat in it)',
+        defaultPath: saves,
+        properties: ['openDirectory'],
+      });
+    return res.canceled ? null : res.filePaths[0];
+  },
 };
+
+function minecraftSavesDir() {
+  const home = app.getPath('home');
+  const dir = process.platform === 'win32' ? path.join(app.getPath('appData'), '.minecraft', 'saves')
+    : isMac ? path.join(home, 'Library', 'Application Support', 'minecraft', 'saves')
+      : path.join(home, '.minecraft', 'saves');
+  return fs.existsSync(dir) ? dir : undefined;
+}
 
 ipcMain.handle('invoke', async (_evt, { channel, payload }) => {
   const fn = handlers[channel];
@@ -177,6 +221,8 @@ ipcMain.handle('invoke', async (_evt, { channel, payload }) => {
   try {
     return { ok: true, data: await fn(payload) };
   } catch (err) {
-    return { ok: false, error: err.message };
+    // `outdated` marks failures that suggest this build no longer matches an
+    // outside service's API; the UI then shows the "out of date" warning.
+    return { ok: false, error: err.message, outdated: !!err.outdated };
   }
 });

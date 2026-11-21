@@ -4,16 +4,18 @@
 // A GUI app launched from Finder, a .desktop launcher or an AppImage does not
 // inherit the user's login-shell PATH, so spawning a bare `java` works when the
 // app is started from a terminal and mysteriously fails when it isn't. This
-// module resolves a real java executable up front and caches it.
+// module finds every installed runtime and picks one new enough for the
+// Minecraft version being run (Minecraft 26.x needs Java 25, 1.20.5+ needs 21…).
 
 const fs = require('fs');
 const os = require('os');
 const path = require('path');
-const { execFileSync, spawnSync } = require('child_process');
+const { execFile, execFileSync } = require('child_process');
 
 const EXE = process.platform === 'win32' ? 'java.exe' : 'java';
 
-let cached;
+// The Java that the newest Minecraft releases need. Used in install hints.
+const LATEST_JAVA = 25;
 
 function isExecutableFile(p) {
   try {
@@ -36,35 +38,38 @@ function launcherIn(home) {
 }
 
 function fromJavaHome() {
-  return process.env.JAVA_HOME ? launcherIn(process.env.JAVA_HOME) : null;
+  return process.env.JAVA_HOME ? [launcherIn(process.env.JAVA_HOME)] : [];
 }
 
 function fromPath() {
+  const found = [];
   for (const dir of (process.env.PATH || '').split(path.delimiter)) {
     if (!dir) continue;
     const p = path.join(dir, EXE);
-    if (isExecutableFile(p)) return p;
+    // macOS's /usr/bin/java is a stub that pops an "install Java" dialog; the
+    // real JDKs behind it are found through java_home instead.
+    if (process.platform === 'darwin' && p === '/usr/bin/java') continue;
+    if (isExecutableFile(p)) found.push(p);
   }
-  return null;
+  return found;
 }
 
 // macOS ships a helper that reports the newest installed JDK, and it works even
 // when PATH is bare. /usr/bin/java itself is only a stub that pops a dialog.
 function fromMacJavaHomeTool() {
-  if (process.platform !== 'darwin') return null;
+  if (process.platform !== 'darwin') return [];
   try {
     const home = execFileSync('/usr/libexec/java_home', {
       encoding: 'utf8',
       stdio: ['ignore', 'pipe', 'ignore'],
     }).trim();
-    return home ? launcherIn(home) : null;
+    return home ? [launcherIn(home)] : [];
   } catch {
-    return null;
+    return [];
   }
 }
 
-// Install roots a GUI app can't reach through PATH. Newest-looking entries are
-// tried first so a modern Minecraft gets a modern JVM.
+// Install roots a GUI app can't reach through PATH.
 function wellKnownRoots() {
   if (process.platform === 'darwin') {
     return [
@@ -78,81 +83,136 @@ function wellKnownRoots() {
   if (process.platform === 'linux') {
     return ['/usr/lib/jvm', '/usr/lib64/jvm', '/opt/java', '/opt/jdk', '/snap'];
   }
+  const pf = process.env.ProgramFiles || 'C:\\Program Files';
   return [
-    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Java'),
-    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Eclipse Adoptium'),
-    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Microsoft', 'jdk'),
-    path.join(process.env.ProgramFiles || 'C:\\Program Files', 'Zulu'),
+    path.join(pf, 'Java'),
+    path.join(pf, 'Eclipse Adoptium'),
+    path.join(pf, 'Microsoft'),           // Microsoft Build of OpenJDK: jdk-21.0.x…
+    path.join(pf, 'Zulu'),
+    path.join(pf, 'Amazon Corretto'),
+    path.join(pf, 'BellSoft'),
     path.join(process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', 'Java'),
+    path.join(os.homedir(), '.jdks'),     // IntelliJ-downloaded JDKs
   ];
 }
 
-// Sort so that higher version numbers come first: jdk-21 beats jdk-8.
-function byVersionDesc(a, b) {
-  const num = (s) => Number((s.match(/(\d+)/) || [0, 0])[1]);
-  return num(b) - num(a) || b.localeCompare(a);
-}
-
 function fromWellKnownDirs() {
+  const found = [];
   for (const root of wellKnownRoots()) {
     let entries;
     try {
       entries = fs.readdirSync(root, { withFileTypes: true })
         .filter((e) => e.isDirectory() || e.isSymbolicLink())
         .map((e) => e.name)
-        .filter((n) => /jdk|jre|java|zulu|temurin|corretto|graal|openjdk/i.test(n))
-        .sort(byVersionDesc);
+        .filter((n) => /jdk|jre|java|zulu|temurin|corretto|graal|openjdk|liberica/i.test(n));
     } catch {
       continue;
     }
     for (const name of entries) {
-      const found = launcherIn(path.join(root, name));
-      if (found) return found;
+      const bin = launcherIn(path.join(root, name));
+      if (bin) found.push(bin);
     }
   }
-  return null;
+  return found;
 }
 
-// The resolved java executable, or null when there is no usable runtime.
-function findJava() {
-  if (cached !== undefined) return cached;
-  cached = fromJavaHome()
-    || fromMacJavaHomeTool()
-    || fromPath()
-    || fromWellKnownDirs()
-    || null;
-  return cached;
-}
-
-// Path to spawn. Throws with a platform-appropriate hint when Java is missing,
-// which is far more useful than the raw ENOENT the spawn would produce.
-function javaBin() {
-  const found = findJava();
-  if (found) return found;
-  throw new Error(`No Java runtime found. ${installHint()}`);
-}
-
-function installHint() {
-  if (process.platform === 'darwin') {
-    return 'Install a JDK 21 (for example: brew install --cask temurin) and reopen Zen Host.';
+// Every distinct java launcher on this machine, in preference order.
+function discover() {
+  const seen = new Set();
+  const out = [];
+  for (const p of [...fromJavaHome(), ...fromMacJavaHomeTool(), ...fromPath(), ...fromWellKnownDirs()]) {
+    if (!p) continue;
+    let key = p;
+    try { key = fs.realpathSync(p); } catch {}
+    if (process.platform === 'win32') key = key.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(p);
   }
-  if (process.platform === 'linux') {
-    return 'Install a JDK 21 from your package manager (for example: sudo apt install openjdk-21-jre-headless).';
+  return out;
+}
+
+// "1.8.0_402" -> 8, "21.0.5" -> 21, "25" -> 25
+function majorOf(versionString) {
+  const m = /^(\d+)(?:\.(\d+))?/.exec(versionString || '');
+  if (!m) return null;
+  return m[1] === '1' && m[2] ? Number(m[2]) : Number(m[1]);
+}
+
+// A JDK's `release` file states its version without having to start a JVM.
+function majorFromReleaseFile(bin) {
+  const home = path.dirname(path.dirname(bin));
+  try {
+    const text = fs.readFileSync(path.join(home, 'release'), 'utf8');
+    const m = /^JAVA_VERSION="([^"]+)"/m.exec(text);
+    return m ? majorOf(m[1]) : null;
+  } catch {
+    return null;
   }
-  return 'Install a JDK 21 from adoptium.net and reopen Zen Host.';
 }
 
 // `java -version` reports on stderr, not stdout, so both streams are captured.
-// Used only for the diagnostics readout.
-function javaVersion() {
-  const bin = findJava();
-  if (!bin) return null;
-  const res = spawnSync(bin, ['-version'], { encoding: 'utf8', timeout: 10000 });
-  if (res.error) return null;
-  const text = `${res.stderr || ''}${res.stdout || ''}`.trim();
-  return text.split('\n')[0].trim() || null;
+function runVersion(bin) {
+  return new Promise((resolve) => {
+    execFile(bin, ['-version'], { timeout: 15000, windowsHide: true }, (err, stdout, stderr) => {
+      const text = `${stderr || ''}${stdout || ''}`.trim();
+      resolve(err && !text ? null : text);
+    });
+  });
 }
 
-function resetCache() { cached = undefined; }
+const _versions = new Map(); // launcher path -> { major, line }
 
-module.exports = { findJava, javaBin, javaVersion, installHint, resetCache };
+async function describe(bin) {
+  if (_versions.has(bin)) return _versions.get(bin);
+  let major = majorFromReleaseFile(bin);
+  let line = null;
+  if (!major) {
+    const text = await runVersion(bin);
+    line = text ? text.split('\n')[0].trim() : null;
+    const m = text && /version "([^"]+)"/.exec(text);
+    major = m ? majorOf(m[1]) : null;
+  }
+  const info = { path: bin, major, line: line || (major ? `Java ${major}` : null) };
+  _versions.set(bin, info);
+  return info;
+}
+
+// All runtimes with their major versions. Re-scanned on every call, so a Java
+// installed while Zen Host is open is picked up without a restart.
+async function listJavas() {
+  return Promise.all(discover().map(describe));
+}
+
+// Path to the java to run a server with. Picks the oldest runtime that is new
+// enough — that is what the official launcher does, and old Forge versions break
+// on much newer Java. Throws a readable, platform-specific error otherwise.
+async function javaFor(minMajor, mcVersion) {
+  const javas = await listJavas();
+  const label = mcVersion ? `Minecraft ${mcVersion}` : 'This server';
+  if (!javas.length) {
+    throw new Error(`No Java runtime found. ${label} needs Java ${minMajor || LATEST_JAVA}. ${installHint(minMajor)}`);
+  }
+  const need = minMajor || 0;
+  const fits = javas.filter((j) => j.major && j.major >= need).sort((a, b) => a.major - b.major);
+  if (fits.length) return fits[0].path;
+
+  // A runtime whose version couldn't be read may still work; let it try.
+  const unknown = javas.find((j) => !j.major);
+  if (unknown) return unknown.path;
+
+  const newest = javas.reduce((a, b) => (b.major > a.major ? b : a));
+  throw new Error(`${label} needs Java ${need} or newer, but the newest Java on this computer is Java ${newest.major}. ${installHint(need)}`);
+}
+
+function installHint(major = LATEST_JAVA) {
+  if (process.platform === 'darwin') {
+    return `Install a JDK ${major} (for example: brew install --cask temurin@${major}), then try again.`;
+  }
+  if (process.platform === 'linux') {
+    return `Install a JDK ${major} from your package manager (for example: sudo apt install openjdk-${major}-jre-headless), then try again.`;
+  }
+  return `Install a JDK ${major} from adoptium.net, then try again.`;
+}
+
+module.exports = { listJavas, javaFor, installHint, LATEST_JAVA };
